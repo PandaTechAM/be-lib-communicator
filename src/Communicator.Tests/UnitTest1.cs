@@ -1,4 +1,4 @@
-namespace PandaNuGet.Tests;
+namespace Communicator.Tests;
 
 public class UnitTest1
 {
