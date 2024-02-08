@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communicator", "src\Communi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communicator.Tests", "src\Communicator.Tests\Communicator.Tests.csproj", "{0305E58F-1C47-454C-B10B-A223F2561A85}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communicator.Demo", "src\Communicator.Demo\Communicator.Demo.csproj", "{5AF7F69F-4713-423A-964F-797D37E1C5B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{0305E58F-1C47-454C-B10B-A223F2561A85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0305E58F-1C47-454C-B10B-A223F2561A85}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0305E58F-1C47-454C-B10B-A223F2561A85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AF7F69F-4713-423A-964F-797D37E1C5B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AF7F69F-4713-423A-964F-797D37E1C5B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AF7F69F-4713-423A-964F-797D37E1C5B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AF7F69F-4713-423A-964F-797D37E1C5B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

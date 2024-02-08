@@ -1,8 +1,8 @@
 # Pandatech.Communicator
 
-
 ## Introduction
 
+This nuget is fake for now. Under development.
 
 
 ## Features
