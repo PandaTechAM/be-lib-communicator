@@ -12,19 +12,21 @@ internal class FakeSmsService(ILogger<FakeSmsService> logger) : ISmsService
         foreach (var recipient in smsMessage.Recipients)
         {
             recipient.ValidateAndTransform();
+            
             logger.LogCritical("Sms sent to {Recipient}\n Sms message is {Message}", recipient, smsMessage.Message);
         }
         
         return Task.CompletedTask;
     }
 
-    public Task SendBulkAsync(List<SmsMessage> smsMessages, CancellationToken cancellationToken = default)
+    public Task SendBulkAsync(List<SmsMessage> smsMessageList, CancellationToken cancellationToken = default)
     {
-        foreach (var sms in smsMessages)
+        foreach (var sms in smsMessageList)
         {
             foreach (var recipient in sms.Recipients)
             {
                 recipient.ValidateAndTransform();
+                
                 logger.LogCritical("Sms sent to {Recipient} \n Sms message is {Message}", recipient, sms.Message);
             }
         }

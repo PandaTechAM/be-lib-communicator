@@ -13,6 +13,7 @@ internal class FakeEmailService(ILogger<FakeEmailService> logger) : IEmailServic
 
         logger.LogCritical("Email sent to {Recipient}\n Email subject is {Subject} \n Email body is {Body}",
             emailMessage.Recipients, emailMessage.Subject, emailMessage.Body);
+        
         return Task.CompletedTask;
     }
 
@@ -21,6 +22,7 @@ internal class FakeEmailService(ILogger<FakeEmailService> logger) : IEmailServic
         foreach (var emailMessage in emailMessages)
         {
             EmailMessageValidator.Validate(emailMessage);
+            
             logger.LogCritical("Email sent to {Recipient} \n Email subject is {Subject} \n Email body is {Body}",
                 emailMessage.Recipients, emailMessage.Subject, emailMessage.Body);
         }

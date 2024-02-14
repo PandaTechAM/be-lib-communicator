@@ -9,4 +9,5 @@ public class EmailConfiguration
     public bool UseSsl { get; set; }
     public string SenderEmail { get; set; } = null!;
     public int TimeoutMs { get; set; } = 10000;
+    public string Channel { get; set; } = null!;
 }
