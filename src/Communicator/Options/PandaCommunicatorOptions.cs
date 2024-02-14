@@ -2,8 +2,8 @@
 
 public class PandaCommunicatorOptions
 {
-    public bool SmsFake { get; set; } = false;
-    public SmsConfiguration? SmsConfiguration { get; set; }
-    public bool EmailFake { get; set; } = false;
-    public EmailConfiguration? EmailConfiguration { get; set; }
+    public bool SmsFake { get; set; }
+    public List<SmsConfiguration>? SmsConfigurations { get; set; }
+    public bool EmailFake { get; set; }
+    public List<EmailConfiguration>? EmailConfigurations { get; set; }
 }

@@ -1,9 +1,9 @@
 namespace Communicator.Tests;
 
-public class UnitTest1
+public class EmailTests
 {
     [Fact]
-    public void Test1()
+    public void Send_Email()
     {
     }
 }

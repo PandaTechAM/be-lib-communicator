@@ -4,6 +4,10 @@ namespace Communicator.Options;
 
 public class SmsConfiguration
 {
-    public int SmsProvider { get; set; }
-    public string Properties { get; set; } = null!; // todo just for sample
+    public string Provider { get; set; } = null!;
+    public string BaseUrl { get; set; } = null!;
+    public string From { get; set; } = null!;
+    public Dictionary<string, string> Properties { get; set; } = new();
+    public int TimeoutMs { get; set; } = 10000;
+    public string Channel { get; set; } = null!;
 }
