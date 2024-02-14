@@ -18,7 +18,7 @@
   - **Dexatel**
   - **Twilio**
 
-This package is ideal for developers seeking an easy-to-use Email/SMS sender in .NET-based applications.
+This package is ideal for efficient and reliable messaging in any application.
 
 ## 1.2. Installation
 
