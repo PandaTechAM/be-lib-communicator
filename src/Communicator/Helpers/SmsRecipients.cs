@@ -24,6 +24,12 @@ internal static class SmsRecipients
             recipient.RemovePhoneFormatParenthesesAndAdditionSign();
         }
 
+        char[] charsToCheck = ['+', '(', ')', ' '];
+        if (recipients.Any(x => x.Any(n => charsToCheck.Contains(n))))
+        {
+            recipients = recipients.RemovePhoneFormatParenthesesAndAdditionSign();
+        }
+
         return recipients;
     }
 }

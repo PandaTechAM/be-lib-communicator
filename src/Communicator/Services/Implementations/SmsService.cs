@@ -12,13 +12,17 @@ using Newtonsoft.Json.Serialization;
 
 namespace Communicator.Services.Implementations;
 
-internal class SmsService(PandaCommunicatorOptions options) : ISmsService
+internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpClientFactory) : ISmsService
 {
-    private SmsConfiguration _smsConfiguration;
-    private HttpClient _httpClient;
+    private SmsConfiguration _smsConfiguration = null!;
+    private HttpClient _httpClient = null!;
+    private string _channel = null!;
 
     public async Task SendAsync(SmsMessage smsMessage, CancellationToken cancellationToken = default)
     {
+        smsMessage = ValidateAndTransformRecipients(smsMessage);
+        SmsMessageValidator.Validate(smsMessage);
+
         GetProviderConfigurationAndGenerateHttpClient(smsMessage.Channel);
 
         await SendSmsAsync(smsMessage, cancellationToken);
@@ -26,23 +30,45 @@ internal class SmsService(PandaCommunicatorOptions options) : ISmsService
 
     public async Task SendBulkAsync(List<SmsMessage> smsMessageList, CancellationToken cancellationToken = default)
     {
+        smsMessageList = ValidateAndTransformRecipients(smsMessageList);
+
         foreach (var smsMessage in smsMessageList)
         {
+            SmsMessageValidator.Validate(smsMessage);
+
             GetProviderConfigurationAndGenerateHttpClient(smsMessage.Channel);
 
             await SendSmsAsync(smsMessage, cancellationToken);
         }
     }
 
+    private static SmsMessage ValidateAndTransformRecipients(SmsMessage smsMessage)
+    {
+        smsMessage.Recipients = smsMessage.Recipients.ValidateAndTransform();
+
+        return smsMessage;
+    }
+
+    private static List<SmsMessage> ValidateAndTransformRecipients(List<SmsMessage> smsMessageList)
+    {
+        foreach (var smsMessage in smsMessageList)
+        {
+            smsMessage.Recipients = smsMessage.Recipients.ValidateAndTransform();
+        }
+
+        return smsMessageList;
+    }
+
     private void GetProviderConfigurationAndGenerateHttpClient(string channel)
     {
-        _smsConfiguration = GetSmsConfigurationByChannel(channel);
-        _httpClient = GenerateProviderHttpClient(_smsConfiguration);
+        _channel = channel;
+        _smsConfiguration = GetSmsConfigurationByChannel();
+        _httpClient = GenerateProviderHttpClient();
     }
-    
-    private SmsConfiguration GetSmsConfigurationByChannel(string channel)
+
+    private SmsConfiguration GetSmsConfigurationByChannel()
     {
-        return options.SmsConfigurations?.FirstOrDefault(x => x.Channel == channel)
+        return options.SmsConfigurations?.FirstOrDefault(x => x.Key == _channel).Value
                ?? throw new ArgumentException("No valid provider with given channel");
     }
 
@@ -60,24 +86,13 @@ internal class SmsService(PandaCommunicatorOptions options) : ISmsService
         return provider;
     }
 
-    private HttpClient GenerateProviderHttpClient(SmsConfiguration smsConfiguration)
+    private HttpClient GenerateProviderHttpClient()
     {
-        var client = new HttpClient
-        {
-            BaseAddress = new Uri(smsConfiguration.BaseUrl),
-            Timeout = TimeSpan.FromMilliseconds(smsConfiguration.TimeoutMs)
-        };
-
-        Enum.TryParse(typeof(SmsProviders), smsConfiguration.Provider, out var providerValue);
-
-        if (providerValue is null)
-        {
-            throw new Exception("Wrong provider");
-        }
+        var client = httpClientFactory.CreateClient(_channel);
 
         var provider = GetSmsProvider(_smsConfiguration);
 
-        var properties = smsConfiguration.Properties;
+        var properties = _smsConfiguration.Properties;
 
         switch (provider)
         {
@@ -111,7 +126,8 @@ internal class SmsService(PandaCommunicatorOptions options) : ISmsService
         }
     }
 
-    private async Task<List<SendSmsResponse>> SendSmsViaDexatelAsync(SmsMessage smsMessage, CancellationToken cancellationToken)
+    private async Task<List<SendSmsResponse>> SendSmsViaDexatelAsync(SmsMessage smsMessage,
+        CancellationToken cancellationToken)
     {
         var request = new DexatelSmsSendRequest
         {
@@ -125,7 +141,7 @@ internal class SmsService(PandaCommunicatorOptions options) : ISmsService
         };
 
         var response = await _httpClient.PostAsync(
-            $"{_smsConfiguration.BaseUrl}/v1/messages",
+            $"{SmsProviderIntegrations.BaseUrls[_smsConfiguration.Provider]}/v1/messages",
             new StringContent(
                 JsonConvert.SerializeObject(request, new JsonSerializerSettings
                 {
@@ -154,14 +170,15 @@ internal class SmsService(PandaCommunicatorOptions options) : ISmsService
         }).ToList() ?? [];
     }
 
-    private async Task<List<SendSmsResponse>> SendSmsViaTwilioAsync(SmsMessage smsMessage, CancellationToken cancellationToken)
+    private async Task<List<SendSmsResponse>> SendSmsViaTwilioAsync(SmsMessage smsMessage,
+        CancellationToken cancellationToken)
     {
         var result = new List<SendSmsResponse>();
 
         foreach (var phone in smsMessage.Recipients.MakeDistinct())
         {
             var response = await _httpClient.PostAsync(
-                $"{_smsConfiguration.BaseUrl}/2010-04-01/Accounts/{_smsConfiguration.Properties["SID"]}/Messages.json",
+                $"{SmsProviderIntegrations.BaseUrls[_smsConfiguration.Provider]}/2010-04-01/Accounts/{_smsConfiguration.Properties["SID"]}/Messages.json",
                 new FormUrlEncodedContent(new[]
                 {
                     new KeyValuePair<string, string>("To", phone),

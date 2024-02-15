@@ -6,65 +6,65 @@ using Communicator.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddPandaCommunicator(options =>
+builder.AddCommunicator(options =>
 {
     options.SmsFake = false;
-    options.SmsConfigurations =
-    [
-        new SmsConfiguration
+    options.SmsConfigurations = new Dictionary<string, SmsConfiguration>
+    {
         {
-            Provider = "Dexatel",
-            BaseUrl = "https://api.dexatel.com",
-            From = "sender_name",
-            Properties = new()
+            "GeneralSender", new SmsConfiguration
             {
-                { "X-Dexatel-Key", "key" }
-            },
-            TimeoutMs = 10000,
-            Channel = "GeneralSender"
+                Provider = "Dexatel",
+                From = "sender_name",
+                Properties = new Dictionary<string, string>
+                {
+                    { "X-Dexatel-Key", "key" }
+                },
+                TimeoutMs = 10000
+            }
         },
-
-        new SmsConfiguration
         {
-            Provider = "Twilio",
-            BaseUrl = "https://api.twilio.com",
-            From = "sender_number",
-            Properties = new()
+            "TransactionalSender", new SmsConfiguration
             {
-                { "SID", "key" },
-                { "AUTH_TOKEN", "token" }
-            },
-            TimeoutMs = 10000,
-            Channel = "TransactionalSender"
+                Provider = "Twilio",
+                From = "sender_number",
+                Properties = new Dictionary<string, string>
+                {
+                    { "SID", "key" },
+                    { "AUTH_TOKEN", "token" }
+                },
+                TimeoutMs = 10000
+            }
         }
-    ];
+    };
     options.EmailFake = false;
-    options.EmailConfigurations =
-    [
-        new EmailConfiguration
+    options.EmailConfigurations = new Dictionary<string, EmailConfiguration>
+    {
         {
-            SmtpServer = "smtp.test.com",
-            SmtpPort = 465, // 587
-            SmtpUsername = "test",
-            SmtpPassword = "test123",
-            SenderEmail = "test@test.com",
-            UseSsl = true, // false
-            TimeoutMs = 10000,
-            Channel = "GeneralSender"
+            "GeneralSender2", new EmailConfiguration
+            {
+                SmtpServer = "smtp.test.com",
+                SmtpPort = 465, // 587
+                SmtpUsername = "test",
+                SmtpPassword = "test123",
+                SenderEmail = "test@test.com",
+                UseSsl = true, // false
+                TimeoutMs = 10000
+            }
         },
-
-        new EmailConfiguration
         {
-            SmtpServer = "smtp.gmail.com",
-            SmtpPort = 465, // 587
-            SmtpUsername = "vazgen",
-            SmtpPassword = "vazgen123",
-            SenderEmail = "vazgencho@gmail.com",
-            UseSsl = true, // false
-            TimeoutMs = 10000,
-            Channel = "TransactionalSender"
+            "TransactionalSender", new EmailConfiguration
+            {
+                SmtpServer = "smtp.gmail.com",
+                SmtpPort = 465, // 587
+                SmtpUsername = "vazgen",
+                SmtpPassword = "vazgen123",
+                SenderEmail = "vazgencho@gmail.com",
+                UseSsl = true, // false
+                TimeoutMs = 10000
+            }
         }
-    ];
+    };
 });
 
 builder.Services.AddEndpointsApiExplorer();

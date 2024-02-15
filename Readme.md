@@ -30,74 +30,98 @@ Install this NuGet library directly from the IDE package installer or by followi
 
 To incorporate PandaTech.Communicator into your project, you have a primary method to setup in your `Program.cs`:
 
-`builder.AddPandaCommunicator();`
+`builder.AddCommunicator();`
 
 Configuration options can be specified either in `appsettings.json` or directly in `Program.cs`, with the latter taking precedence.
+
+There are several supported channels which must be kept during setup:
+
+```csharp
+EmailChannels
+{
+    "GeneralSender",
+    "TransactionalSender",
+    "NotificationSender",
+    "MarketingSender",
+    "SupportSender"
+};
+    
+SmsChannels
+{
+    "GeneralSender",
+    "TransactionalSender",
+    "NotificationSender",
+    "MarketingSender",
+    "SupportSender"
+};
+```
+
+For each channel can be setup same provider, but it's recommended to have different sender, as they are dedicated for different purposes.
 
 ### 1.3.1. Program.cs Example
 
 In case of using SSL by setting UseSsl = true use port number 456, otherwise use 587 for non SSL connection. 
 
 ```csharp
-builder.AddPandaCommunicator(options =>
+builder.AddCommunicator(options =>
 {
     options.SmsFake = false;
-    options.SmsConfigurations =
-    [
-        new SmsConfiguration
+    options.SmsConfigurations = new Dictionary<string, SmsConfiguration>
+    {
         {
-            Provider = "Dexatel",
-            BaseUrl = "https://api.dexatel.com",
-            From = "sender_name",
-            Properties = new()
+            "GeneralSender", new SmsConfiguration
             {
-                { "X-Dexatel-Key", "key" }
-            },
-            TimeoutMs = 10000,
-            Channel = "GeneralSender"
+                Provider = "Dexatel",
+                From = "sender_name",
+                Properties = new Dictionary<string, string>
+                {
+                    { "X-Dexatel-Key", "key" }
+                },
+                TimeoutMs = 10000
+            }
         },
-
-        new SmsConfiguration
         {
-            Provider = "Twilio",
-            BaseUrl = "https://api.twilio.com",
-            From = "sender_number",
-            Properties = new()
+            "TransactionalSender", new SmsConfiguration
             {
-                { "SID", "key" },
-                { "AUTH_TOKEN", "token" }
-            },
-            TimeoutMs = 10000,
-            Channel = "TransactionalSender"
+                Provider = "Twilio",
+                From = "sender_number",
+                Properties = new Dictionary<string, string>
+                {
+                    { "SID", "key" },
+                    { "AUTH_TOKEN", "token" }
+                },
+                TimeoutMs = 10000
+            }
         }
-    ];
+    };
     options.EmailFake = false;
-    options.EmailConfigurations =
-    [
-        new EmailConfiguration
+    options.EmailConfigurations = new Dictionary<string, EmailConfiguration>
+    {
         {
-            SmtpServer = "smtp.test.com",
-            SmtpPort = 465, // 587
-            SmtpUsername = "test",
-            SmtpPassword = "test123",
-            SenderEmail = "test@test.com",
-            UseSsl = true, // false
-            TimeoutMs = 10000,
-            Channel = "GeneralSender"
+            "GeneralSender", new EmailConfiguration
+            {
+                SmtpServer = "smtp.test.com",
+                SmtpPort = 465, // 587
+                SmtpUsername = "test",
+                SmtpPassword = "test123",
+                SenderEmail = "test@test.com",
+                UseSsl = true, // false
+                TimeoutMs = 10000
+            }
         },
-
-        new EmailConfiguration
         {
-            SmtpServer = "smtp.gmail.com",
-            SmtpPort = 465, // 587
-            SmtpUsername = "vazgen",
-            SmtpPassword = "vazgen123",
-            SenderEmail = "vazgencho@gmail.com",
-            UseSsl = true, // false
-            TimeoutMs = 10000,
-            Channel = "TransactionalSender"
+            "TransactionalSender", new EmailConfiguration
+            {
+                SmtpServer = "smtp.gmail.com",
+                SmtpPort = 465, // 587
+                SmtpUsername = "vazgen",
+                SmtpPassword = "vazgen123",
+                SenderEmail = "vazgencho@gmail.com",
+                UseSsl = true, // false
+                TimeoutMs = 10000
+            }
         }
-    ];
+    };
 });
 
 ```
@@ -112,54 +136,48 @@ builder.AddPandaCommunicator(options =>
       "Microsoft.AspNetCore": "Warning"
     }
   },
-  "PandaCommunicator": {
+  "Communicator": {
     "SmsFake": false,
-    "SmsConfigurationOptions": [
-      {
+    "SmsConfigurations": {
+      "GeneralSender": {
         "Provider": "Dexatel",
-        "BaseUrl": "https://api.dexatel.com",
         "From": "sender_name",
         "Properties": {
           "X-Dexatel-Key": "key"
         },
-        "TimeoutMs": "10000",
-        "Channel": "GeneralSender"
+        "TimeoutMs": "10000"
       },
-      {
+      "TransactionalSender": {
         "Provider": "Twilio",
-        "BaseUrl": "https://api.twilio.com",
-        "From": "twilio_sender_number",
+        "From": "sender_number",
         "Properties": {
           "SID": "key",
           "AUTH_TOKEN": "token"
         },
-        "TimeoutMs": "10000",
-        "Channel": "TransactionalSender"
+        "TimeoutMs": "10000"
       }
-    ],
+    },
     "EmailFake": false,
-    "EmailConfigurationOptions": [
-      {
+    "EmailConfigurations": {
+      "GeneralSender": {
         "SmtpServer": "smtp.gmail.com",
-        "SmtpPort": "465", // 587
-        "SmtpUsername": "test",
-        "SmtpPassword": "test123",
-        "SenderEmail": "test@test.com",
-        "UseSsl": "true", // false
-        "TimeoutMs": "10000",
-        "Channel": "GeneralSender"
-      },
-      {
-        "SmtpServer": "smtp.gmail.com",
-        "SmtpPort": "465", // 587
+        "SmtpPort": 465, // 587
         "SmtpUsername": "vazgen",
         "SmtpPassword": "vazgen123",
         "SenderEmail": "vazgencho@gmail.com",
-        "UseSsl": "true", // false
-        "TimeoutMs": "10000",
-        "Channel": "TransactionalSender"
+        "UseSsl": true, // false
+        "TimeoutMs": "10000"
+      },
+      "TransactionalSender": {
+        "SmtpServer": "smtp.gmail.com",
+        "SmtpPort": 465, // 587
+        "SmtpUsername": "vazgen",
+        "SmtpPassword": "vazgen123",
+        "SenderEmail": "vazgencho@gmail.com",
+        "UseSsl": true, // false
+        "TimeoutMs": "10000"
       }
-    ]
+    }
   }
 }
 ```
@@ -167,11 +185,11 @@ The configuration options in `appsettings.json` and `program.cs` (priority) are 
 
 ## 1.4. Configuration Options Explained
 
-- **PandaCommunicator:** Global settings for PandaTech.Communicator
+- **Communicator:** Global settings for PandaTech.Communicator
 - **SmsFake:** This setup is for fake SMS service to be used which doesn't send real SMS messages and just return `TTask.CompletedTask`.
-- **SmsConfigurations:** SMS configurations given by `appsettings.json` or via `builder.AddPandaCommunicator()` options for SMS.
+- **SmsConfigurations:** SMS configurations given by `appsettings.json` or via `builder.AddCommunicator()` options for SMS.
 - **EmailFake:** This setup is for fake Email service to be used which doesn't send real SMS messages and just return `TTask.CompletedTask`.
-- **EmailConfigurations:** Email configurations given by `appsettings.json` or via `builder.AddPandaCommunicator()` options for Email.
+- **EmailConfigurations:** Email configurations given by `appsettings.json` or via `builder.AddCommunicator()` options for Email.
 
 ## 1.5. Limitations
 

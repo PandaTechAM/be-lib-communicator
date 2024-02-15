@@ -1,4 +1,5 @@
-﻿using Communicator.Helpers;
+﻿using Communicator.Enums;
+using Communicator.Helpers;
 using Communicator.Options;
 using Communicator.Services.Implementations;
 using Communicator.Services.Interfaces;
@@ -10,14 +11,14 @@ namespace Communicator.Extensions;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static WebApplicationBuilder AddPandaCommunicator(this WebApplicationBuilder builder,
-        Action<PandaCommunicatorOptions>? setupAction = null)
+    public static WebApplicationBuilder AddCommunicator(this WebApplicationBuilder builder,
+        Action<CommunicatorOptions>? setupAction = null)
     {
-        var setupActionOptions = GetPandaCommunicatorSetupOptions(setupAction);
+        var setupActionOptions = GetCommunicatorSetupOptions(setupAction);
 
-        var configurationOptions = GetPandaCommunicatorConfigurationOptions(builder);
+        var configurationOptions = GetCommunicatorConfigurationOptions(builder);
 
-        PandaCommunicatorOptions options;
+        CommunicatorOptions options;
 
         if (setupAction is not null)
         {
@@ -32,16 +33,18 @@ public static class WebApplicationBuilderExtensions
             throw new Exception("No any Configuration Option setup.");
         }
 
+        RegisterSmsHttpClientsFromConfig(builder, options);
+        
         RegisterServices(builder, options);
 
         return builder;
     }
 
-    private static PandaCommunicatorOptions? GetPandaCommunicatorConfigurationOptions(IHostApplicationBuilder builder)
+    private static CommunicatorOptions? GetCommunicatorConfigurationOptions(IHostApplicationBuilder builder)
     {
         var configuration = builder.Configuration;
 
-        var configurationOptions = PandaCommunicatorConfigurator.ReadConfigurationOptions(configuration);
+        var configurationOptions = CommunicatorConfigurator.ReadConfigurationOptions(configuration);
 
         if (configurationOptions is null)
         {
@@ -53,10 +56,10 @@ public static class WebApplicationBuilderExtensions
         return configurationOptions;
     }
 
-    private static PandaCommunicatorOptions? GetPandaCommunicatorSetupOptions(
-        Action<PandaCommunicatorOptions>? setupAction = null)
+    private static CommunicatorOptions? GetCommunicatorSetupOptions(
+        Action<CommunicatorOptions>? setupAction = null)
     {
-        var setupOptions = new PandaCommunicatorOptions();
+        var setupOptions = new CommunicatorOptions();
 
         if (setupAction is null)
         {
@@ -69,10 +72,25 @@ public static class WebApplicationBuilderExtensions
         return setupOptions;
     }
 
-    private static void RegisterServices(IHostApplicationBuilder builder,
-        PandaCommunicatorOptions pandaCommunicatorOptions)
+    private static void RegisterSmsHttpClientsFromConfig(IHostApplicationBuilder builder,
+        CommunicatorOptions communicatorOptions)
     {
-        if (pandaCommunicatorOptions.EmailFake)
+        if (communicatorOptions.SmsFake) return;
+        
+        foreach (var (key, configValue) in communicatorOptions.SmsConfigurations!)
+        {
+            builder.Services.AddHttpClient(key, client =>
+            {
+                client.BaseAddress = new Uri(SmsProviderIntegrations.BaseUrls[configValue.Provider]);
+                client.Timeout = TimeSpan.FromMilliseconds(configValue.TimeoutMs);
+            });
+        }
+    }
+    
+    private static void RegisterServices(IHostApplicationBuilder builder,
+        CommunicatorOptions communicatorOptions)
+    {
+        if (communicatorOptions.EmailFake)
         {
             builder.Services.AddScoped<IEmailService, FakeEmailService>();
         }
@@ -81,7 +99,7 @@ public static class WebApplicationBuilderExtensions
             builder.Services.AddScoped<IEmailService, EmailService>();
         }
 
-        if (pandaCommunicatorOptions.SmsFake)
+        if (communicatorOptions.SmsFake)
         {
             builder.Services.AddScoped<ISmsService, FakeSmsService>();
         }
@@ -90,6 +108,6 @@ public static class WebApplicationBuilderExtensions
             builder.Services.AddScoped<ISmsService, SmsService>();
         }
 
-        builder.Services.AddSingleton(pandaCommunicatorOptions);
+        builder.Services.AddSingleton(communicatorOptions);
     }
 }

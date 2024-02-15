@@ -1,8 +1,8 @@
 namespace Communicator.Helpers;
 
-public static class DistinctMaker
+internal static class DistinctMaker
 {
-    public static List<T> MakeDistinct<T>(this IEnumerable<T> list)
+    internal static List<T> MakeDistinct<T>(this IEnumerable<T> list)
     {
         return list.Distinct().ToList();
     }

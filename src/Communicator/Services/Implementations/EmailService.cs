@@ -7,10 +7,10 @@ using Communicator.Options;
 
 namespace Communicator.Services.Implementations;
 
-internal class EmailService(PandaCommunicatorOptions options)
+internal class EmailService(CommunicatorOptions options)
     : IEmailService
 {
-    private EmailConfiguration _emailConfiguration;
+    private EmailConfiguration _emailConfiguration = null!;
     
     public async Task SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
     {
@@ -89,7 +89,7 @@ internal class EmailService(PandaCommunicatorOptions options)
 
     private EmailConfiguration GetEmailConfigurationByChannel(string channel)
     {
-        return options.EmailConfigurations?.FirstOrDefault(x => x.Channel == channel)
+        return options.EmailConfigurations?.FirstOrDefault(x => x.Key == channel).Value
             ?? throw new ArgumentException("No valid provider with given channel");
     }
 }
