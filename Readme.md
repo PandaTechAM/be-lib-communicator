@@ -241,8 +241,8 @@ public interface ISmsService
 
 public interface IEmailService
 {
-    Task SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default);
-    Task SendBulkAsync(List<EmailMessage> emailMessages, CancellationToken cancellationToken = default);
+    Task<GeneralEmailResponse> SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default);
+    Task<List<GeneralEmailResponse>> SendBulkAsync(List<EmailMessage> emailMessages, CancellationToken cancellationToken = default);
 }
 ```
 
@@ -258,13 +258,10 @@ var sms = new SmsMessage
 await smsService.SendAsync(sms);
 ```
 
-Sms service return as well response for each service individually (Not generic), which can be used in the code if you need to store related information into the Database.
+Sms service returns general response which includes general properties in already integrated services. 
 
-The responses are:
-- **DexatelSmsSendResponse**
-- **TwilioSmsSendResponse**
-
-Both responses return with list (ex. List<GeneralSmsResponse>) when you use any of the methods to send sms.
+Both methods return `List<GeneralSmsResponse>` when you use them while sending sms. 
+If you set a variable to the call, you will be able to use returned response.
 
 ```csharp
 public class GeneralSmsResponse
@@ -291,6 +288,19 @@ var email = new EmailMessage
     Channel = EmailChannels.GeneralSender
 };
 await emailService.SendAsync(email);
+```
+Both methods return response (SendAsync - `GeneralEmailResponse`; SendBulkAsync - `List<GeneralEmailResponse>`) when you use them while sending email.
+If you set a variable to the call, you will be able to use returned response.
+
+```csharp
+public class GeneralEmailResponse
+{
+    public string Status { get; set; } = null!;
+    public string Code { get; set; } = null!;
+    public string TrackingId { get; set; } = null!;
+    public string Id { get; set; } = null!;
+    public string Service { get; set; } = null!;
+}
 ```
 
 ## 1.6. Limitations
