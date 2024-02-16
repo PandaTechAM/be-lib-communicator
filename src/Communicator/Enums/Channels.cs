@@ -1,22 +1,28 @@
+using System.Reflection;
+
 namespace Communicator.Enums;
 
 internal static class Channels
 {
-    internal static readonly List<string> EmailChannels = new()
+    internal static List<string> EmailChannels => GetEmailChannels();
+
+    internal static List<string> SmsChannels => GetSmsChannels();
+
+    private static List<string> GetEmailChannels()
     {
-        "GeneralSender",
-        "TransactionalSender",
-        "NotificationSender",
-        "MarketingSender",
-        "SupportSender"
-    };
+        var fields = typeof(EmailChannels).GetFields(BindingFlags.Public | BindingFlags.Static);
+        
+        return fields
+            .Where(field => field.FieldType == typeof(string))
+            .Select(field => (string)field.GetValue(null)!).ToList();
+    }
     
-    internal static readonly List<string> SmsChannels = new()
+    private static List<string> GetSmsChannels()
     {
-        "GeneralSender",
-        "TransactionalSender",
-        "NotificationSender",
-        "MarketingSender",
-        "SupportSender"
-    };
+        var fields = typeof(SmsChannels).GetFields(BindingFlags.Public | BindingFlags.Static);
+        
+        return fields
+            .Where(field => field.FieldType == typeof(string))
+            .Select(field => (string)field.GetValue(null)!).ToList();
+    }
 }

@@ -2,6 +2,7 @@
 using MimeKit;
 using MailKit.Net.Smtp;
 using Communicator.Models;
+using Communicator.Models.GeneralResponses;
 using Communicator.Services.Interfaces;
 using Communicator.Options;
 
@@ -12,16 +13,18 @@ internal class EmailService(CommunicatorOptions options)
 {
     private EmailConfiguration _emailConfiguration = null!;
     
-    public async Task SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
+    public async Task<GeneralEmailResponse> SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
     {
         EmailMessageValidator.Validate(emailMessage);
         
         var message = CreateMimeMessage(emailMessage);
-        await SendEmailAsync(message, cancellationToken);
+        return await SendEmailAsync(message, cancellationToken);
     }
 
-    public async Task SendBulkAsync(List<EmailMessage> emailMessages, CancellationToken cancellationToken = default)
+    public async Task<List<GeneralEmailResponse>> SendBulkAsync(List<EmailMessage> emailMessages, CancellationToken cancellationToken = default)
     {
+        var responses = new List<GeneralEmailResponse>();
+        
         foreach (var emailMessage in emailMessages)
         {
             EmailMessageValidator.Validate(emailMessage);
@@ -29,8 +32,10 @@ internal class EmailService(CommunicatorOptions options)
 
         foreach (var message in emailMessages.Select(CreateMimeMessage))
         {
-            await SendEmailAsync(message, cancellationToken);
+            responses.Add(await SendEmailAsync(message, cancellationToken));
         }
+
+        return responses;
     }
 
     private MimeMessage CreateMimeMessage(EmailMessage emailMessage)
@@ -75,7 +80,7 @@ internal class EmailService(CommunicatorOptions options)
         return message;
     }
 
-    private async Task SendEmailAsync(MimeMessage message, CancellationToken cancellationToken)
+    private async Task<GeneralEmailResponse> SendEmailAsync(MimeMessage message, CancellationToken cancellationToken)
     {
         using var smtpClient = new SmtpClient();
         smtpClient.Timeout = _emailConfiguration.TimeoutMs;
@@ -83,8 +88,10 @@ internal class EmailService(CommunicatorOptions options)
         await smtpClient.ConnectAsync(_emailConfiguration.SmtpServer, _emailConfiguration.SmtpPort, _emailConfiguration.UseSsl,
             cancellationToken);
         await smtpClient.AuthenticateAsync(_emailConfiguration.SmtpUsername, _emailConfiguration.SmtpPassword, cancellationToken);
-        await smtpClient.SendAsync(message, cancellationToken);
+        var response = await smtpClient.SendAsync(message, cancellationToken);
         await smtpClient.DisconnectAsync(true, cancellationToken);
+
+        return GeneralEmailResponse.Parse(response);
     }
 
     private EmailConfiguration GetEmailConfigurationByChannel(string channel)

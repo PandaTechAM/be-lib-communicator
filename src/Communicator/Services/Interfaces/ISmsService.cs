@@ -1,9 +1,10 @@
 ﻿using Communicator.Models;
+using Communicator.Models.GeneralResponses;
 
 namespace Communicator.Services.Interfaces;
 
 public interface ISmsService
 {
-    Task SendAsync(SmsMessage smsMessage, CancellationToken cancellationToken = default);
-    Task SendBulkAsync(List<SmsMessage> smsMessageList, CancellationToken cancellationToken = default);
+    Task<List<GeneralSmsResponse>> SendAsync(SmsMessage smsMessage, CancellationToken cancellationToken = default);
+    Task<List<GeneralSmsResponse>> SendBulkAsync(List<SmsMessage> smsMessageList, CancellationToken cancellationToken = default);
 }

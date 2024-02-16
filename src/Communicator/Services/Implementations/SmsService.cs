@@ -4,6 +4,7 @@ using Communicator.Enums;
 using Communicator.Helpers;
 using Communicator.Models;
 using Communicator.Models.Dexatel;
+using Communicator.Models.GeneralResponses;
 using Communicator.Models.Twilio;
 using Communicator.Options;
 using Communicator.Services.Interfaces;
@@ -18,45 +19,31 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
     private HttpClient _httpClient = null!;
     private string _channel = null!;
 
-    public async Task SendAsync(SmsMessage smsMessage, CancellationToken cancellationToken = default)
+    public async Task<List<GeneralSmsResponse>> SendAsync(SmsMessage smsMessage,
+        CancellationToken cancellationToken = default)
     {
-        smsMessage = ValidateAndTransformRecipients(smsMessage);
-        SmsMessageValidator.Validate(smsMessage);
+        smsMessage = SmsMessageValidator.ValidateAndTransform(smsMessage);
 
         GetProviderConfigurationAndGenerateHttpClient(smsMessage.Channel);
 
-        await SendSmsAsync(smsMessage, cancellationToken);
+        return await SendSmsAsync(smsMessage, cancellationToken);
     }
 
-    public async Task SendBulkAsync(List<SmsMessage> smsMessageList, CancellationToken cancellationToken = default)
+    public async Task<List<GeneralSmsResponse>> SendBulkAsync(List<SmsMessage> smsMessageList,
+        CancellationToken cancellationToken = default)
     {
-        smsMessageList = ValidateAndTransformRecipients(smsMessageList);
+        var generalSmsResponses = new List<GeneralSmsResponse>();
 
         foreach (var smsMessage in smsMessageList)
         {
-            SmsMessageValidator.Validate(smsMessage);
+            SmsMessageValidator.ValidateAndTransform(smsMessage);
 
             GetProviderConfigurationAndGenerateHttpClient(smsMessage.Channel);
 
-            await SendSmsAsync(smsMessage, cancellationToken);
-        }
-    }
-
-    private static SmsMessage ValidateAndTransformRecipients(SmsMessage smsMessage)
-    {
-        smsMessage.Recipients = smsMessage.Recipients.ValidateAndTransform();
-
-        return smsMessage;
-    }
-
-    private static List<SmsMessage> ValidateAndTransformRecipients(List<SmsMessage> smsMessageList)
-    {
-        foreach (var smsMessage in smsMessageList)
-        {
-            smsMessage.Recipients = smsMessage.Recipients.ValidateAndTransform();
+            generalSmsResponses.AddRange(await SendSmsAsync(smsMessage, cancellationToken));
         }
 
-        return smsMessageList;
+        return generalSmsResponses;
     }
 
     private void GetProviderConfigurationAndGenerateHttpClient(string channel)
@@ -110,23 +97,25 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
         return client;
     }
 
-    private async Task SendSmsAsync(SmsMessage smsMessage, CancellationToken cancellationToken)
+    private async Task<List<GeneralSmsResponse>> SendSmsAsync(SmsMessage smsMessage,
+        CancellationToken cancellationToken)
     {
         var provider = GetSmsProvider(_smsConfiguration);
 
         switch (provider)
         {
             case SmsProviders.Dexatel:
-                await SendSmsViaDexatelAsync(smsMessage, cancellationToken);
-                break;
+                return await SendSmsViaDexatelAsync(smsMessage, cancellationToken);
 
             case SmsProviders.Twilio:
-                await SendSmsViaTwilioAsync(smsMessage, cancellationToken);
-                break;
+                return await SendSmsViaTwilioAsync(smsMessage, cancellationToken);
+
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
-    private async Task<List<SendSmsResponse>> SendSmsViaDexatelAsync(SmsMessage smsMessage,
+    private async Task<List<GeneralSmsResponse>> SendSmsViaDexatelAsync(SmsMessage smsMessage,
         CancellationToken cancellationToken)
     {
         var request = new DexatelSmsSendRequest
@@ -164,16 +153,23 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
                 }
             });
 
-        return responseObject?.Data.Select(d => new SendSmsResponse
-        {
-            To = d.To, OuterSmsId = d.Id, ProviderSentDate = d.CreateDate, Status = d.Status
-        }).ToList() ?? [];
+        return responseObject?.Data.Select(x =>
+            new GeneralSmsResponse
+            {
+                From = x.From,
+                To = x.To,
+                Status = x.Status,
+                CreateDate = x.CreateDate,
+                UpdateDate = x.UpdateDate,
+                OuterSmsId = x.Id,
+                Body = x.Text
+            }).ToList() ?? [];
     }
 
-    private async Task<List<SendSmsResponse>> SendSmsViaTwilioAsync(SmsMessage smsMessage,
+    private async Task<List<GeneralSmsResponse>> SendSmsViaTwilioAsync(SmsMessage smsMessage,
         CancellationToken cancellationToken)
     {
-        var result = new List<SendSmsResponse>();
+        var result = new List<TwilioSmsSendResponse>();
 
         foreach (var phone in smsMessage.Recipients.MakeDistinct())
         {
@@ -197,22 +193,19 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
                     }
                 });
 
-            if (responseObject != null)
-            {
-                result.Add(new SendSmsResponse
-                {
-                    To = responseObject.To,
-                    OuterSmsId = responseObject.Sid,
-                    ProviderSentDate = responseObject.DateCreated,
-                    Status = responseObject.Status,
-                });
-            }
-            else
-            {
-                result.Add(new SendSmsResponse());
-            }
+            result.Add(responseObject ?? new TwilioSmsSendResponse());
         }
 
-        return result;
+        return result.Select(x =>
+            new GeneralSmsResponse
+            {
+                From = x.From,
+                To = x.To,
+                Status = x.Status,
+                CreateDate = x.DateCreated,
+                UpdateDate = x.DateUpdated,
+                OuterSmsId = x.Sid,
+                Body = x.Body
+            }).ToList();
     }
 }

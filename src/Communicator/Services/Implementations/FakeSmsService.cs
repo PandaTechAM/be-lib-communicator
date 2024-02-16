@@ -1,5 +1,6 @@
 ﻿using Communicator.Helpers;
 using Communicator.Models;
+using Communicator.Models.GeneralResponses;
 using Communicator.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -7,30 +8,34 @@ namespace Communicator.Services.Implementations;
 
 internal class FakeSmsService(ILogger<FakeSmsService> logger) : ISmsService
 {
-    public Task SendAsync(SmsMessage smsMessage, CancellationToken cancellationToken = default)
+    public Task<List<GeneralSmsResponse>> SendAsync(SmsMessage smsMessage, CancellationToken cancellationToken = default)
     {
+        smsMessage = SmsMessageValidator.ValidateAndTransform(smsMessage);
+        
         foreach (var recipient in smsMessage.Recipients)
         {
-            recipient.ValidateAndTransform();
+            recipient.Transform();
             
             logger.LogCritical("Sms sent to {Recipient}\n Sms message is {Message}", recipient, smsMessage.Message);
         }
         
-        return Task.CompletedTask;
+        return Task.FromResult(new List<GeneralSmsResponse>());
     }
 
-    public Task SendBulkAsync(List<SmsMessage> smsMessageList, CancellationToken cancellationToken = default)
+    public Task<List<GeneralSmsResponse>> SendBulkAsync(List<SmsMessage> smsMessageList, CancellationToken cancellationToken = default)
     {
-        foreach (var sms in smsMessageList)
+        foreach (var smsMessage in smsMessageList)
         {
-            foreach (var recipient in sms.Recipients)
+            SmsMessageValidator.ValidateAndTransform(smsMessage);
+
+            foreach (var recipient in smsMessage.Recipients)
             {
-                recipient.ValidateAndTransform();
+                recipient.Transform();
                 
-                logger.LogCritical("Sms sent to {Recipient} \n Sms message is {Message}", recipient, sms.Message);
+                logger.LogCritical("Sms sent to {Recipient} \n Sms message is {Message}", recipient, smsMessage.Message);
             }
         }
 
-        return Task.CompletedTask;
+        return Task.FromResult(new List<GeneralSmsResponse>());
     }
 }

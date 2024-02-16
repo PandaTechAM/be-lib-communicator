@@ -1,9 +1,10 @@
 ﻿using Communicator.Models;
+using Communicator.Models.GeneralResponses;
 
 namespace Communicator.Services.Interfaces;
 
 public interface IEmailService
 {
-    Task SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default);
-    Task SendBulkAsync(List<EmailMessage> emailMessages, CancellationToken cancellationToken = default);
+    Task<GeneralEmailResponse> SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default);
+    Task<List<GeneralEmailResponse>> SendBulkAsync(List<EmailMessage> emailMessages, CancellationToken cancellationToken = default);
 }

@@ -1,4 +1,5 @@
 using Communicator.Demo.MessageTemplates;
+using Communicator.Enums;
 using Communicator.Extensions;
 using Communicator.Models;
 using Communicator.Options;
@@ -83,15 +84,15 @@ app.MapGet("/send/email-and-sms", async (IEmailService emailService, ISmsService
         Subject = "Some subject",
         Body = "Some body",
         IsBodyHtml = false,
-        Channel = "GeneralSender"
+        Channel = EmailChannels.GeneralSender
     };
     await emailService.SendAsync(email);
 
     var sms = new SmsMessage
     {
         Recipients = ["+37493910593"],
-        Message = SmsTemplates.OtpCodeVerificationRequestMessage("123456"),
-        Channel = "GeneralSender"
+        Message = "123456",
+        Channel = SmsChannels.GeneralSender
     };
     await smsService.SendAsync(sms);
     return Results.Ok("Email and SMS sent successfully.");
@@ -105,7 +106,7 @@ app.MapGet("/send/email-and-sms/multiple-recipients", async (IEmailService email
         Subject = "Some subject",
         Body = "Some body",
         IsBodyHtml = false,
-        Channel = "GeneralSender"
+        Channel = EmailChannels.GeneralSender
     };
     await emailService.SendAsync(email);
 
@@ -113,7 +114,7 @@ app.MapGet("/send/email-and-sms/multiple-recipients", async (IEmailService email
     {
         Recipients = ["+37493910593", "+37493910593", "+37493910594", "+37493910595"],
         Message = "Barev erjankutyun",
-        Channel = "GeneralSender"
+        Channel = SmsChannels.GeneralSender
     };
     await smsService.SendAsync(sms);
     return Results.Ok("Email and SMS sent successfully.");
@@ -127,10 +128,24 @@ app.MapGet("/send/email/html-body", async (IEmailService emailService) =>
         Subject = "Some subject",
         Body = EmailTemplates.AddEmailAddressTemplate("Test", "Test", "https://www.google.com/"),
         IsBodyHtml = true,
-        Channel = "GeneralSender"
+        Channel = EmailChannels.GeneralSender
     };
     await emailService.SendAsync(email);
     return Results.Ok("Email sent successfully.");
+});
+
+app.MapGet("/send/email/html-body/with-response", async (IEmailService emailService) =>
+{
+    var email = new EmailMessage
+    {
+        Recipients = ["a@a.com"],
+        Subject = "Some subject",
+        Body = EmailTemplates.AddEmailAddressTemplate("Test", "Test", "https://www.google.com/"),
+        IsBodyHtml = true,
+        Channel = EmailChannels.GeneralSender
+    };
+    var response = await emailService.SendAsync(email);
+    return Results.Ok(response);
 });
 
 app.MapGet("/send/email/multiple-recipients/html-body", async (IEmailService emailService) =>
@@ -141,7 +156,7 @@ app.MapGet("/send/email/multiple-recipients/html-body", async (IEmailService ema
         Subject = "Some subject",
         Body = EmailTemplates.AddEmailAddressTemplate("Test", "Test", "https://www.google.com/"),
         IsBodyHtml = true,
-        Channel = "GeneralSender"
+        Channel = EmailChannels.GeneralSender
     };
     await emailService.SendAsync(email);
     return Results.Ok("Email sent successfully.");
@@ -153,7 +168,7 @@ app.MapGet("/send/sms/multiple-recipients", async (ISmsService smsService) =>
     {
         Recipients = ["+37493910593", "+37493910593", "+37493910594", "+37493910595"],
         Message = "Barev erjankutyun",
-        Channel = "GeneralSender"
+        Channel = SmsChannels.GeneralSender
     };
     await smsService.SendAsync(sms);
     return Results.Ok("SMS sent successfully.");
@@ -165,10 +180,47 @@ app.MapGet("/send/sms/twilio", async (ISmsService smsService) =>
     {
         Recipients = ["+37495988247"],
         Message = "Barev erjankutyun",
-        Channel = "TransactionalSender"
+        Channel = SmsChannels.TransactionalSender
     };
     await smsService.SendAsync(sms);
     return Results.Ok("SMS sent successfully.");
+});
+
+app.MapGet("/send/bulk/email/html-body", async (IEmailService emailService) =>
+{
+    var emailMessageList = new List<EmailMessage>();
+    for (var i = 0; i < 5; i++)
+    {
+        var random = new Random();
+        emailMessageList.Add(new EmailMessage
+        {
+            Recipients = ["a1@a.com", "a2@a.com", "a5@a.com", $"a{random.Next(1, 5)}@a.com"],
+            Subject = "Some subject",
+            Body = EmailTemplates.AddEmailAddressTemplate("Test", "Test", "https://www.google.com/"),
+            IsBodyHtml = true,
+            Channel = EmailChannels.GeneralSender
+        });
+    }
+
+    await emailService.SendBulkAsync(emailMessageList);
+    return Results.Ok("Emails sent successfully.");
+});
+
+app.MapGet("/send/bulk/sms/multiple-recipients", async (ISmsService smsService) =>
+{
+    var smsMessageList = new List<SmsMessage>();
+    for (var i = 1; i <= 5; i++)
+    {
+        smsMessageList.Add(new SmsMessage
+        {
+            Recipients = ["+37493910593", $"+3749391059{i}"],
+            Message = "Barev erjankutyun",
+            Channel = SmsChannels.GeneralSender
+        });
+    }
+
+    await smsService.SendBulkAsync(smsMessageList);
+    return Results.Ok("SMS messages sent successfully.");
 });
 
 app.Run();
