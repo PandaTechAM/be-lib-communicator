@@ -2,23 +2,29 @@
 using MimeKit;
 using MailKit.Net.Smtp;
 using Communicator.Models;
+using Communicator.Models.GeneralResponses;
 using Communicator.Services.Interfaces;
 using Communicator.Options;
 
 namespace Communicator.Services.Implementations;
 
-internal class EmailService(EmailConfiguration emailConfig) : IEmailService //todo not implemented different smptp providers
+internal class EmailService(CommunicatorOptions options)
+    : IEmailService
 {
-    public async Task SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
+    private EmailConfiguration _emailConfiguration = null!;
+    
+    public async Task<GeneralEmailResponse> SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
     {
         EmailMessageValidator.Validate(emailMessage);
-
+        
         var message = CreateMimeMessage(emailMessage);
-        await SendEmailAsync(message, cancellationToken);
+        return await SendEmailAsync(message, cancellationToken);
     }
 
-    public async Task SendBulkAsync(List<EmailMessage> emailMessages, CancellationToken cancellationToken = default)
+    public async Task<List<GeneralEmailResponse>> SendBulkAsync(List<EmailMessage> emailMessages, CancellationToken cancellationToken = default)
     {
+        var responses = new List<GeneralEmailResponse>();
+        
         foreach (var emailMessage in emailMessages)
         {
             EmailMessageValidator.Validate(emailMessage);
@@ -26,15 +32,19 @@ internal class EmailService(EmailConfiguration emailConfig) : IEmailService //to
 
         foreach (var message in emailMessages.Select(CreateMimeMessage))
         {
-            await SendEmailAsync(message, cancellationToken);
+            responses.Add(await SendEmailAsync(message, cancellationToken));
         }
+
+        return responses;
     }
 
     private MimeMessage CreateMimeMessage(EmailMessage emailMessage)
     {
+        _emailConfiguration = GetEmailConfigurationByChannel(emailMessage.Channel);
+
         var message = new MimeMessage();
-        message.From.Add(MailboxAddress.Parse(emailConfig.SenderEmail));
-        message.To.AddRange(emailMessage.Recipients.Select(MailboxAddress.Parse));
+        message.From.Add(MailboxAddress.Parse(_emailConfiguration.SenderEmail));
+        message.To.AddRange(emailMessage.Recipients.MakeDistinct().Select(MailboxAddress.Parse));
         message.Subject = emailMessage.Subject;
 
         var builder = new BodyBuilder();
@@ -59,24 +69,34 @@ internal class EmailService(EmailConfiguration emailConfig) : IEmailService //to
 
         if (emailMessage.Cc.Count != 0)
         {
-            message.Cc.AddRange(emailMessage.Cc.Select(MailboxAddress.Parse));
+            message.Cc.AddRange(emailMessage.Cc.MakeDistinct().Select(MailboxAddress.Parse));
         }
 
         if (emailMessage.Bcc.Count != 0)
         {
-            message.Bcc.AddRange(emailMessage.Bcc.Select(MailboxAddress.Parse));
+            message.Bcc.AddRange(emailMessage.Bcc.MakeDistinct().Select(MailboxAddress.Parse));
         }
 
         return message;
     }
 
-    private async Task SendEmailAsync(MimeMessage message, CancellationToken cancellationToken)
+    private async Task<GeneralEmailResponse> SendEmailAsync(MimeMessage message, CancellationToken cancellationToken)
     {
         using var smtpClient = new SmtpClient();
-        await smtpClient.ConnectAsync(emailConfig.SmtpServer, emailConfig.SmtpPort, emailConfig.UseSsl,
+        smtpClient.Timeout = _emailConfiguration.TimeoutMs;
+        
+        await smtpClient.ConnectAsync(_emailConfiguration.SmtpServer, _emailConfiguration.SmtpPort, _emailConfiguration.UseSsl,
             cancellationToken);
-        await smtpClient.AuthenticateAsync(emailConfig.SmtpUsername, emailConfig.SmtpPassword, cancellationToken);
-        await smtpClient.SendAsync(message, cancellationToken);
+        await smtpClient.AuthenticateAsync(_emailConfiguration.SmtpUsername, _emailConfiguration.SmtpPassword, cancellationToken);
+        var response = await smtpClient.SendAsync(message, cancellationToken);
         await smtpClient.DisconnectAsync(true, cancellationToken);
+
+        return GeneralEmailResponse.Parse(response);
+    }
+
+    private EmailConfiguration GetEmailConfigurationByChannel(string channel)
+    {
+        return options.EmailConfigurations?.FirstOrDefault(x => x.Key == channel).Value
+            ?? throw new ArgumentException("No valid provider with given channel");
     }
 }

@@ -1,6 +1,4 @@
-﻿using Communicator.Enums;
-
-namespace Communicator.Models;
+﻿namespace Communicator.Models;
 
 public class EmailMessage
 {

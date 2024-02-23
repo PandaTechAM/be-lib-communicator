@@ -1,14 +1,24 @@
 ﻿namespace Communicator.Extensions;
 
-public static class StringExtensions
+internal static class StringExtensions
 {
-    public static string RemovePhoneFormatParenthesesAndAdditionSign(this string phoneString)
+    internal static string RemovePhoneFormatParenthesesAndAdditionSign(this string phoneString)
     {
-        return phoneString.Replace("(", "").Replace(")", "").Replace("+", "");
+        return phoneString
+            .Trim()
+            .Replace("(", "")
+            .Replace(")", "")
+            .Replace(" ", "")
+            .Replace("+", "");
     }
 
-    public static List<string> RemovePhoneFormatParenthesesAndAdditionSign(this List<string> phoneStrings)
+    internal static List<string> RemovePhoneFormatParenthesesAndAdditionSign(this List<string> phoneStrings)
     {
-        return phoneStrings.Select(x => x.Replace("(", "").Replace(")", "").Replace("+", "")).ToList();
+        return phoneStrings.Select(x => x.Trim()
+                .Replace("(", "")
+                .Replace(")", "")
+                .Replace(" ", "")
+                .Replace("+", ""))
+            .ToList();
     }
 }

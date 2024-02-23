@@ -1,4 +1,4 @@
-﻿namespace Communicator.Enums;
+namespace Communicator.Enums;
 
 public static class SmsChannels
 {
