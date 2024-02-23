@@ -5,6 +5,8 @@
   - [1.2. Installation](#12-installation)
   - [1.3. Setup](#13-setup)
     - [1.3.1. Program.cs Example](#131-programcs-example)
+      - [1.3.1.1. Using WebApplicationBuilder](#1311-using-webapplicationbuilder)
+      - [1.3.1.2. Using IServiceCollection](#1312-using-iservicecollection)
     - [1.3.2. Appsettings.json Example](#132-appsettingsjson-example)
   - [1.4. Configuration Options Explained](#14-configuration-options-explained)
   - [1.5. Usage](#15-usage)
@@ -132,7 +134,7 @@ builder.AddCommunicator(options =>
 
 ```
 
-#### 1.3.1.2. Useing `IServiceCollection`
+#### 1.3.1.2. Using `IServiceCollection`
 
 ```csharp
 services.AddCommunicator(configuration, options =>
