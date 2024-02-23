@@ -81,6 +81,12 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
 
         var properties = _smsConfiguration.Properties;
 
+        return SetRequestHeaders(client, provider, properties);
+    }
+
+    private HttpClient SetRequestHeaders(HttpClient client, SmsProviders provider,
+        Dictionary<string, string> properties)
+    {
         switch (provider)
         {
             case SmsProviders.Dexatel:
@@ -111,7 +117,7 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
                 return await SendSmsViaTwilioAsync(smsMessage, cancellationToken);
 
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new InvalidOperationException();
         }
     }
 
@@ -129,18 +135,7 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
             }
         };
 
-        var response = await _httpClient.PostAsync(
-            $"{SmsProviderIntegrations.BaseUrls[_smsConfiguration.Provider]}/v1/messages",
-            new StringContent(
-                JsonConvert.SerializeObject(request, new JsonSerializerSettings
-                {
-                    ContractResolver = new DefaultContractResolver
-                    {
-                        NamingStrategy = new SnakeCaseNamingStrategy()
-                    }
-                }),
-                Encoding.UTF8,
-                "application/json"), cancellationToken);
+        var response = await PostAsyncViaDexatelHttpClient(request, cancellationToken);
 
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
@@ -165,7 +160,24 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
                 Body = x.Text
             }).ToList() ?? [];
     }
-
+    
+    private async Task<HttpResponseMessage> PostAsyncViaDexatelHttpClient(DexatelSmsSendRequest request,
+        CancellationToken cancellationToken)
+    {
+        return await _httpClient.PostAsync(
+            $"{SmsProviderIntegrations.BaseUrls[_smsConfiguration.Provider]}/v1/messages",
+            new StringContent(
+                JsonConvert.SerializeObject(request, new JsonSerializerSettings
+                {
+                    ContractResolver = new DefaultContractResolver
+                    {
+                        NamingStrategy = new SnakeCaseNamingStrategy()
+                    }
+                }),
+                Encoding.UTF8,
+                "application/json"), cancellationToken);
+    }
+    
     private async Task<List<GeneralSmsResponse>> SendSmsViaTwilioAsync(SmsMessage smsMessage,
         CancellationToken cancellationToken)
     {
@@ -173,15 +185,8 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
 
         foreach (var phone in smsMessage.Recipients.MakeDistinct())
         {
-            var response = await _httpClient.PostAsync(
-                $"{SmsProviderIntegrations.BaseUrls[_smsConfiguration.Provider]}/2010-04-01/Accounts/{_smsConfiguration.Properties["SID"]}/Messages.json",
-                new FormUrlEncodedContent(new[]
-                {
-                    new KeyValuePair<string, string>("To", phone),
-                    new KeyValuePair<string, string>("From", _smsConfiguration.From),
-                    new KeyValuePair<string, string>("Body", smsMessage.Message)
-                }), cancellationToken);
-
+            var response = await PostAsyncViaTwilioHttpClient(phone, smsMessage.Message, cancellationToken);
+            
             var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
             var responseObject = JsonConvert.DeserializeObject<TwilioSmsSendResponse>(responseContent,
@@ -207,5 +212,18 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
                 OuterSmsId = x.Sid,
                 Body = x.Body
             }).ToList();
+    }
+    
+    private async Task<HttpResponseMessage> PostAsyncViaTwilioHttpClient(string phone, string smsMessage,
+        CancellationToken cancellationToken)
+    {
+        return await _httpClient.PostAsync(
+            $"{SmsProviderIntegrations.BaseUrls[_smsConfiguration.Provider]}/2010-04-01/Accounts/{_smsConfiguration.Properties["SID"]}/Messages.json",
+            new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("To", phone),
+                new KeyValuePair<string, string>("From", _smsConfiguration.From),
+                new KeyValuePair<string, string>("Body", smsMessage)
+            }), cancellationToken);
     }
 }
