@@ -31,9 +31,11 @@ Install this NuGet library directly from the IDE package installer or by followi
 
 ## 1.3. Setup
 
-To incorporate PandaTech.Communicator into your project, you have a primary method to setup in your `Program.cs`:
+To incorporate PandaTech.Communicator into your project, you have 2 primary methods to setup in your `Program.cs`:
 
-`builder.AddCommunicator();`
+The first method directly using `WebApplicationBuilder` from which `IConfiguration` is directly used. But for the second method builder is not accessible, so we pass `IConfiguration` into it as parameter.   
+- `builder.AddCommunicator();`
+- `services.AddCommunicator(configuration);`
 
 Configuration options can be specified either in `appsettings.json` or directly in `Program.cs`, with the latter taking precedence.
 
@@ -65,8 +67,75 @@ For each channel can be setup same provider, but it's recommended to have differ
 
 In case of using SSL by setting UseSsl = true use port number 456, otherwise use 587 for non SSL connection. 
 
+#### 1.3.1.1. Using `WebApplicationBuilder`
 ```csharp
 builder.AddCommunicator(options =>
+{
+    options.SmsFake = false;
+    options.SmsConfigurations = new Dictionary<string, SmsConfiguration>
+    {
+        {
+            "GeneralSender", new SmsConfiguration
+            {
+                Provider = "Dexatel",
+                From = "sender_name",
+                Properties = new Dictionary<string, string>
+                {
+                    { "X-Dexatel-Key", "key" }
+                },
+                TimeoutMs = 10000
+            }
+        },
+        {
+            "TransactionalSender", new SmsConfiguration
+            {
+                Provider = "Twilio",
+                From = "sender_number",
+                Properties = new Dictionary<string, string>
+                {
+                    { "SID", "key" },
+                    { "AUTH_TOKEN", "token" }
+                },
+                TimeoutMs = 10000
+            }
+        }
+    };
+    options.EmailFake = false;
+    options.EmailConfigurations = new Dictionary<string, EmailConfiguration>
+    {
+        {
+            "GeneralSender", new EmailConfiguration
+            {
+                SmtpServer = "smtp.test.com",
+                SmtpPort = 465, // 587
+                SmtpUsername = "test",
+                SmtpPassword = "test123",
+                SenderEmail = "test@test.com",
+                UseSsl = true, // false
+                TimeoutMs = 10000
+            }
+        },
+        {
+            "TransactionalSender", new EmailConfiguration
+            {
+                SmtpServer = "smtp.gmail.com",
+                SmtpPort = 465, // 587
+                SmtpUsername = "vazgen",
+                SmtpPassword = "vazgen123",
+                SenderEmail = "vazgencho@gmail.com",
+                UseSsl = true, // false
+                TimeoutMs = 10000
+            }
+        }
+    };
+});
+
+```
+
+#### 1.3.1.2. Useing `IServiceCollection`
+
+```csharp
+services.AddCommunicator(configuration, options =>
 {
     options.SmsFake = false;
     options.SmsConfigurations = new Dictionary<string, SmsConfiguration>
