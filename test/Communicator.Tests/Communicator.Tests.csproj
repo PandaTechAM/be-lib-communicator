@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Communicator\Communicator.csproj" />
+      <ProjectReference Include="..\..\src\Communicator\Communicator.csproj" />
     </ItemGroup>
 
 </Project>
