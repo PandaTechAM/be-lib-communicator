@@ -2,9 +2,21 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communicator", "src\Communicator\Communicator.csproj", "{25001943-A870-4E17-A9B9-0D190CEC819B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communicator.Tests", "src\Communicator.Tests\Communicator.Tests.csproj", "{0305E58F-1C47-454C-B10B-A223F2561A85}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communicator.Tests", "test\Communicator.Tests\Communicator.Tests.csproj", "{0305E58F-1C47-454C-B10B-A223F2561A85}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communicator.Demo", "src\Communicator.Demo\Communicator.Demo.csproj", "{5AF7F69F-4713-423A-964F-797D37E1C5B4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communicator.Demo", "test\Communicator.Demo\Communicator.Demo.csproj", "{5AF7F69F-4713-423A-964F-797D37E1C5B4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DAE7039F-7312-451A-9598-CEAD4530B77D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{9C906F7E-E8B8-4C2B-BE8B-E299061DC1F6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{00745863-66E5-47D0-A25A-577E5E93E82C}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\main.yml = .github\workflows\main.yml
+		.gitignore = .gitignore
+		global.json = global.json
+		Readme.md = Readme.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +36,10 @@ Global
 		{5AF7F69F-4713-423A-964F-797D37E1C5B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AF7F69F-4713-423A-964F-797D37E1C5B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AF7F69F-4713-423A-964F-797D37E1C5B4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0305E58F-1C47-454C-B10B-A223F2561A85} = {9C906F7E-E8B8-4C2B-BE8B-E299061DC1F6}
+		{5AF7F69F-4713-423A-964F-797D37E1C5B4} = {9C906F7E-E8B8-4C2B-BE8B-E299061DC1F6}
+		{25001943-A870-4E17-A9B9-0D190CEC819B} = {DAE7039F-7312-451A-9598-CEAD4530B77D}
 	EndGlobalSection
 EndGlobal
