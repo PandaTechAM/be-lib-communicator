@@ -8,12 +8,13 @@
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <Authors>Pandatech</Authors>
         <Copyright>MIT</Copyright>
-        <Version>1.0.2</Version>
+        <Version>1.0.3</Version>
         <PackageId>Pandatech.Communicator</PackageId>
         <Title>SMS and Email Communication helper</Title>
         <PackageTags>Pandatech, library, Sms, Email, Messages</PackageTags>
         <Description>A versatile .NET library for integrating SMS and email functionalities. Supports multiple SMS providers and easy configuration through appsettings.json or web builders, ideal for efficient and reliable messaging in any application..</Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-communicator</RepositoryUrl>
+        <!--todo: to update this note-->
         <PackageReleaseNotes>InitialCommit - fake functionalities</PackageReleaseNotes>
     </PropertyGroup>
 

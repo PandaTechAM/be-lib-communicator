@@ -27,7 +27,7 @@ internal static class OptionsValidator
 
         var notSupportedChannels = emailConfigKeys?.Concat(smsConfigKeys ?? []).ToList();
 
-        if (notSupportedChannels?.Count != 0)
+        if (notSupportedChannels is not null && notSupportedChannels.Count != 0)
         {
             throw new InvalidOperationException(
                 $"There are unsupported Channels provided {string.Join(",", notSupportedChannels!)}.");
