@@ -7,67 +7,42 @@ using Communicator.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddCommunicator();
-// builder.AddCommunicator(options =>
-// {
-//     options.SmsFake = false;
-//     options.SmsConfigurations = new Dictionary<string, SmsConfiguration>
-//     {
-//         {
-//             "GeneralSender", new SmsConfiguration
-//             {
-//                 Provider = "Dexatel",
-//                 From = "sender_name",
-//                 Properties = new Dictionary<string, string>
-//                 {
-//                     { "X-Dexatel-Key", "key" }
-//                 },
-//                 TimeoutMs = 10000
-//             }
-//         },
-//         {
-//             "TransactionalSender", new SmsConfiguration
-//             {
-//                 Provider = "Twilio",
-//                 From = "sender_number",
-//                 Properties = new Dictionary<string, string>
-//                 {
-//                     { "SID", "key" },
-//                     { "AUTH_TOKEN", "token" }
-//                 },
-//                 TimeoutMs = 10000
-//             }
-//         }
-//     };
-//     options.EmailFake = false;
-//     options.EmailConfigurations = new Dictionary<string, EmailConfiguration>
-//     {
-//         {
-//             "GeneralSender2", new EmailConfiguration
-//             {
-//                 SmtpServer = "smtp.test.com",
-//                 SmtpPort = 465, // 587
-//                 SmtpUsername = "test",
-//                 SmtpPassword = "test123",
-//                 SenderEmail = "test@test.com",
-//                 UseSsl = true, // false
-//                 TimeoutMs = 10000
-//             }
-//         },
-//         {
-//             "TransactionalSender", new EmailConfiguration
-//             {
-//                 SmtpServer = "smtp.gmail.com",
-//                 SmtpPort = 465, // 587
-//                 SmtpUsername = "vazgen",
-//                 SmtpPassword = "vazgen123",
-//                 SenderEmail = "vazgencho@gmail.com",
-//                 UseSsl = true, // false
-//                 TimeoutMs = 10000
-//             }
-//         }
-//     };
-// });
+// builder.AddCommunicator();
+builder.AddCommunicator(options =>
+{
+    options.SmsFake = false;
+    options.SmsConfigurations = new Dictionary<string, SmsConfiguration>
+    {
+        {
+            "GeneralSender", new SmsConfiguration
+            {
+                Provider = "Dexatel",
+                From = "sender_name",
+                Properties = new Dictionary<string, string>
+                {
+                    { "X-Dexatel-Key", "key" }
+                },
+                TimeoutMs = 10000
+            }
+        }
+    };
+    options.EmailFake = false;
+    options.EmailConfigurations = new Dictionary<string, EmailConfiguration>
+    {
+        {
+            "GeneralSender", new EmailConfiguration
+            {
+                SmtpServer = "smtp-mail.outlook.com",
+                SmtpPort = 587, // 587
+                SmtpUsername = "easybot@easypay.am",
+                SmtpPassword = "rbmpbzsytkvqfzdv",
+                SenderEmail = "easybot@easypay.am",
+                UseSsl = false, // false
+                TimeoutMs = 10000
+            }
+        }
+    };
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
