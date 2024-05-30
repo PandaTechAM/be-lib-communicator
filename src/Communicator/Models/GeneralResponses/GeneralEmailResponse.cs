@@ -61,23 +61,43 @@ public class GeneralEmailResponse
     {
         var responseList = new List<GeneralEmailResponse>();
 
-        foreach (var match in responses.Select(response => Regex.Match(response, GmailPattern)))
+        foreach (var response in responses)
         {
-            // Check if the response string matches the expected format
-            if (!match.Success || match.Groups.Count != 6)
+            var match = Regex.Match(response, GmailPattern);
+        
+            if (!match.Success)
             {
-                throw new ArgumentException("Invalid response string format.");
+                match = Regex.Match(response, OutlookPattern);
+
+                if (!match.Success)
+                {
+                    throw new ArgumentException("Invalid response string format.");
+                }
             }
 
-            // Create a new instance of EmailSendResponse and populate its properties
-            responseList.Add(new GeneralEmailResponse
+            if (match.Groups.Count == 5)
             {
-                Status = match.Groups[1].Value,
-                Code = match.Groups[2].Value,
-                TrackingId = match.Groups[3].Value,
-                Id = match.Groups[4].Value,
-                Service = match.Groups[5].Value
-            });
+                responseList.Add(new GeneralEmailResponse
+                {
+                    Status = match.Groups[1].Value,
+                    Code = match.Groups[2].Value,
+                    TrackingId = null,
+                    Id = match.Groups[3].Value,
+                    Service = match.Groups[4].Value
+                });
+            }
+
+            if (match.Groups.Count == 6)
+            {
+                responseList.Add(new GeneralEmailResponse
+                {
+                    Status = match.Groups[1].Value,
+                    Code = match.Groups[2].Value,
+                    TrackingId = match.Groups[3].Value,
+                    Id = match.Groups[4].Value,
+                    Service = match.Groups[5].Value
+                });
+            }
         }
 
         return responseList;
