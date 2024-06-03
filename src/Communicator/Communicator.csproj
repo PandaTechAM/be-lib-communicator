@@ -8,7 +8,7 @@
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <Authors>Pandatech</Authors>
         <Copyright>MIT</Copyright>
-        <Version>1.0.4</Version>
+        <Version>1.0.5</Version>
         <PackageId>Pandatech.Communicator</PackageId>
         <Title>SMS and Email Communication helper</Title>
         <PackageTags>Pandatech, library, Sms, Email, Messages</PackageTags>

@@ -8,66 +8,53 @@ using Communicator.Services.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddCommunicator();
-// builder.AddCommunicator(options =>
-// {
-//     options.SmsFake = false;
-//     options.SmsConfigurations = new Dictionary<string, SmsConfiguration>
-//     {
-//         {
-//             "GeneralSender", new SmsConfiguration
-//             {
-//                 Provider = "Dexatel",
-//                 From = "sender_name",
-//                 Properties = new Dictionary<string, string>
-//                 {
-//                     { "X-Dexatel-Key", "key" }
-//                 },
-//                 TimeoutMs = 10000
-//             }
-//         },
-//         {
-//             "TransactionalSender", new SmsConfiguration
-//             {
-//                 Provider = "Twilio",
-//                 From = "sender_number",
-//                 Properties = new Dictionary<string, string>
-//                 {
-//                     { "SID", "key" },
-//                     { "AUTH_TOKEN", "token" }
-//                 },
-//                 TimeoutMs = 10000
-//             }
-//         }
-//     };
-//     options.EmailFake = false;
-//     options.EmailConfigurations = new Dictionary<string, EmailConfiguration>
-//     {
-//         {
-//             "GeneralSender2", new EmailConfiguration
-//             {
-//                 SmtpServer = "smtp.test.com",
-//                 SmtpPort = 465, // 587
-//                 SmtpUsername = "test",
-//                 SmtpPassword = "test123",
-//                 SenderEmail = "test@test.com",
-//                 UseSsl = true, // false
-//                 TimeoutMs = 10000
-//             }
-//         },
-//         {
-//             "TransactionalSender", new EmailConfiguration
-//             {
-//                 SmtpServer = "smtp.gmail.com",
-//                 SmtpPort = 465, // 587
-//                 SmtpUsername = "vazgen",
-//                 SmtpPassword = "vazgen123",
-//                 SenderEmail = "vazgencho@gmail.com",
-//                 UseSsl = true, // false
-//                 TimeoutMs = 10000
-//             }
-//         }
-//     };
-// });
+builder.AddCommunicator(options =>
+{
+    options.SmsFake = false;
+    options.SmsConfigurations = new Dictionary<string, SmsConfiguration>
+    {
+        {
+            "GeneralSender", new SmsConfiguration
+            {
+                Provider = "Dexatel",
+                From = "sender_name",
+                Properties = new Dictionary<string, string>
+                {
+                    { "X-Dexatel-Key", "key" }
+                },
+                TimeoutMs = 10000
+            }
+        }
+    };
+    options.EmailFake = false;
+    options.EmailConfigurations = new Dictionary<string, EmailConfiguration>
+    {
+        {
+            "GeneralSender", new EmailConfiguration
+            {
+                SmtpServer = "smtp-mail.outlook.com",
+                SmtpPort = 587, // 587
+                SmtpUsername = "easybot@easypay.am",
+                SmtpPassword = "rbmpbzsytkvqfzdv",
+                SenderEmail = "easybot@easypay.am",
+                UseSsl = false, // false
+                TimeoutMs = 10000
+            }
+        },
+        {
+            "TransactionalSender", new EmailConfiguration
+            {
+                SmtpServer = "smtp.gmail.com",
+                SmtpPort = 465, // 587
+                SmtpUsername = "ruboarm@gmail.com",
+                SmtpPassword = "uqihfffvqfngeczq",
+                SenderEmail = "ruboarm@gmail.com",
+                UseSsl = true, // false
+                TimeoutMs = 10000
+            }
+        }
+    };
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -121,7 +108,7 @@ app.MapGet("/send/email-and-sms/multiple-recipients", async (IEmailService email
     return Results.Ok("Email and SMS sent successfully.");
 });
 
-app.MapGet("/send/email/html-body", async (IEmailService emailService) =>
+app.MapGet("/send/email/html-body/outlook", async (IEmailService emailService) =>
 {
     var email = new EmailMessage
     {
@@ -135,7 +122,21 @@ app.MapGet("/send/email/html-body", async (IEmailService emailService) =>
     return Results.Ok("Email sent successfully.");
 });
 
-app.MapGet("/send/email/html-body/with-response", async (IEmailService emailService) =>
+app.MapGet("/send/email/html-body/gmail", async (IEmailService emailService) =>
+{
+    var email = new EmailMessage
+    {
+        Recipients = ["a@a.com"],
+        Subject = "Some subject",
+        Body = EmailTemplates.AddEmailAddressTemplate("Test", "Test", "https://www.google.com/"),
+        IsBodyHtml = true,
+        Channel = EmailChannels.TransactionalSender
+    };
+    await emailService.SendAsync(email);
+    return Results.Ok("Email sent successfully.");
+});
+
+app.MapGet("/send/email/html-body/with-response/outlook", async (IEmailService emailService) =>
 {
     var email = new EmailMessage
     {
@@ -144,6 +145,20 @@ app.MapGet("/send/email/html-body/with-response", async (IEmailService emailServ
         Body = EmailTemplates.AddEmailAddressTemplate("Test", "Test", "https://www.google.com/"),
         IsBodyHtml = true,
         Channel = EmailChannels.GeneralSender
+    };
+    var response = await emailService.SendAsync(email);
+    return Results.Ok(response);
+});
+
+app.MapGet("/send/email/html-body/with-response/gmail", async (IEmailService emailService) =>
+{
+    var email = new EmailMessage
+    {
+        Recipients = ["a@a.com"],
+        Subject = "Some subject",
+        Body = EmailTemplates.AddEmailAddressTemplate("Test", "Test", "https://www.google.com/"),
+        IsBodyHtml = true,
+        Channel = EmailChannels.TransactionalSender
     };
     var response = await emailService.SendAsync(email);
     return Results.Ok(response);

@@ -13,7 +13,7 @@ internal class EmailService(CommunicatorOptions options)
 {
     private EmailConfiguration _emailConfiguration = null!;
     
-    public async Task<GeneralEmailResponse> SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
+    public async Task<string> SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
     {
         EmailMessageValidator.Validate(emailMessage);
         
@@ -21,9 +21,9 @@ internal class EmailService(CommunicatorOptions options)
         return await SendEmailAsync(message, cancellationToken);
     }
 
-    public async Task<List<GeneralEmailResponse>> SendBulkAsync(List<EmailMessage> emailMessages, CancellationToken cancellationToken = default)
+    public async Task<List<string>> SendBulkAsync(List<EmailMessage> emailMessages, CancellationToken cancellationToken = default)
     {
-        var responses = new List<GeneralEmailResponse>();
+        var responses = new List<string>();
         
         foreach (var emailMessage in emailMessages)
         {
@@ -80,7 +80,7 @@ internal class EmailService(CommunicatorOptions options)
         return message;
     }
 
-    private async Task<GeneralEmailResponse> SendEmailAsync(MimeMessage message, CancellationToken cancellationToken)
+    private async Task<string> SendEmailAsync(MimeMessage message, CancellationToken cancellationToken)
     {
         using var smtpClient = new SmtpClient();
         smtpClient.Timeout = _emailConfiguration.TimeoutMs;
@@ -91,7 +91,7 @@ internal class EmailService(CommunicatorOptions options)
         var response = await smtpClient.SendAsync(message, cancellationToken);
         await smtpClient.DisconnectAsync(true, cancellationToken);
 
-        return GeneralEmailResponse.Parse(response);
+        return response;
     }
 
     private EmailConfiguration GetEmailConfigurationByChannel(string channel)

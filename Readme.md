@@ -360,18 +360,11 @@ var email = new EmailMessage
 };
 await emailService.SendAsync(email);
 ```
-Both methods return response (SendAsync - `GeneralEmailResponse`; SendBulkAsync - `List<GeneralEmailResponse>`) when you use them while sending email.
-If you set a variable to the call, you will be able to use returned response.
+Both methods return response (SendAsync - `string`; SendBulkAsync - `List<string>`) when you use them while sending email.
+If you set a variable to the call, you will be able to use returned response. Response structure varies on different email providers, so you can create your ouw return type and map returned string into it.
 
-```csharp
-public class GeneralEmailResponse
-{
-    public string Status { get; set; } = null!;
-    public string Code { get; set; } = null!;
-    public string TrackingId { get; set; } = null!;
-    public string Id { get; set; } = null!;
-    public string Service { get; set; } = null!;
-}
+```text
+2.0.0 OK 8ONXSST18NU4.DSCFVS8PQ0Q13@test AM0PR08MB5346.eurprd08.prod.outlook.com
 ```
 
 ## 1.6. Limitations
