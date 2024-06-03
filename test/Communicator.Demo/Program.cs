@@ -121,7 +121,7 @@ app.MapGet("/send/email-and-sms/multiple-recipients", async (IEmailService email
     return Results.Ok("Email and SMS sent successfully.");
 });
 
-app.MapGet("/send/email/html-body", async (IEmailService emailService) =>
+app.MapGet("/send/email/html-body/outlook", async (IEmailService emailService) =>
 {
     var email = new EmailMessage
     {
@@ -135,7 +135,21 @@ app.MapGet("/send/email/html-body", async (IEmailService emailService) =>
     return Results.Ok("Email sent successfully.");
 });
 
-app.MapGet("/send/email/html-body/with-response", async (IEmailService emailService) =>
+app.MapGet("/send/email/html-body/gmail", async (IEmailService emailService) =>
+{
+    var email = new EmailMessage
+    {
+        Recipients = ["a@a.com"],
+        Subject = "Some subject",
+        Body = EmailTemplates.AddEmailAddressTemplate("Test", "Test", "https://www.google.com/"),
+        IsBodyHtml = true,
+        Channel = EmailChannels.TransactionalSender
+    };
+    await emailService.SendAsync(email);
+    return Results.Ok("Email sent successfully.");
+});
+
+app.MapGet("/send/email/html-body/with-response/outlook", async (IEmailService emailService) =>
 {
     var email = new EmailMessage
     {
@@ -144,6 +158,20 @@ app.MapGet("/send/email/html-body/with-response", async (IEmailService emailServ
         Body = EmailTemplates.AddEmailAddressTemplate("Test", "Test", "https://www.google.com/"),
         IsBodyHtml = true,
         Channel = EmailChannels.GeneralSender
+    };
+    var response = await emailService.SendAsync(email);
+    return Results.Ok(response);
+});
+
+app.MapGet("/send/email/html-body/with-response/gmail", async (IEmailService emailService) =>
+{
+    var email = new EmailMessage
+    {
+        Recipients = ["a@a.com"],
+        Subject = "Some subject",
+        Body = EmailTemplates.AddEmailAddressTemplate("Test", "Test", "https://www.google.com/"),
+        IsBodyHtml = true,
+        Channel = EmailChannels.TransactionalSender
     };
     var response = await emailService.SendAsync(email);
     return Results.Ok(response);

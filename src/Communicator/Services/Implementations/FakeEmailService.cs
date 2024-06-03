@@ -8,26 +8,27 @@ namespace Communicator.Services.Implementations;
 
 internal class FakeEmailService(ILogger<FakeEmailService> logger) : IEmailService
 {
-    public Task<GeneralEmailResponse> SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
+    public Task<string> SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
     {
         EmailMessageValidator.Validate(emailMessage);
 
         logger.LogCritical("Email sent to {Recipient}\n Email subject is {Subject} \n Email body is {Body}",
             emailMessage.Recipients, emailMessage.Subject, emailMessage.Body);
-        
-        return Task.FromResult(new GeneralEmailResponse());
+
+        return Task.FromResult("2.0.0 OK");
     }
 
-    public Task<List<GeneralEmailResponse>> SendBulkAsync(List<EmailMessage> emailMessages, CancellationToken cancellationToken = default)
+    public Task<List<string>> SendBulkAsync(List<EmailMessage> emailMessages,
+        CancellationToken cancellationToken = default)
     {
         foreach (var emailMessage in emailMessages)
         {
             EmailMessageValidator.Validate(emailMessage);
-            
+
             logger.LogCritical("Email sent to {Recipient} \n Email subject is {Subject} \n Email body is {Body}",
                 emailMessage.Recipients, emailMessage.Subject, emailMessage.Body);
         }
 
-        return Task.FromResult(new List<GeneralEmailResponse>());
+        return Task.FromResult(new List<string>() { "2.0.0 OK" });
     }
 }
