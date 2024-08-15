@@ -8,7 +8,7 @@
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <Authors>Pandatech</Authors>
         <Copyright>MIT</Copyright>
-        <Version>1.0.5</Version>
+        <Version>1.0.6</Version>
         <PackageId>Pandatech.Communicator</PackageId>
         <Title>SMS and Email Communication helper</Title>
         <PackageTags>Pandatech, library, Sms, Email, Messages</PackageTags>
@@ -24,11 +24,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="MailKit" Version="4.3.0" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.1"/>
-        <PackageReference Include="MimeKit" Version="4.3.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-        <PackageReference Include="Pandatech.RegexBox" Version="1.2.3" />
+        <PackageReference Include="MailKit" Version="4.7.1.1" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
+        <PackageReference Include="MimeKit" Version="4.7.1" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Pandatech.RegexBox" Version="1.2.4" />
     </ItemGroup>
 
 </Project>
