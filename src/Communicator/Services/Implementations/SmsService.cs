@@ -15,215 +15,224 @@ namespace Communicator.Services.Implementations;
 
 internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpClientFactory) : ISmsService
 {
-    private SmsConfiguration _smsConfiguration = null!;
-    private HttpClient _httpClient = null!;
-    private string _channel = null!;
+   private string _channel = null!;
+   private HttpClient _httpClient = null!;
+   private SmsConfiguration _smsConfiguration = null!;
 
-    public async Task<List<GeneralSmsResponse>> SendAsync(SmsMessage smsMessage,
-        CancellationToken cancellationToken = default)
-    {
-        smsMessage = SmsMessageValidator.ValidateAndTransform(smsMessage);
+   public async Task<List<GeneralSmsResponse>> SendAsync(SmsMessage smsMessage,
+      CancellationToken cancellationToken = default)
+   {
+      smsMessage = SmsMessageValidator.ValidateAndTransform(smsMessage);
 
-        GetProviderConfigurationAndGenerateHttpClient(smsMessage.Channel);
+      GetProviderConfigurationAndGenerateHttpClient(smsMessage.Channel);
 
-        return await SendSmsAsync(smsMessage, cancellationToken);
-    }
+      return await SendSmsAsync(smsMessage, cancellationToken);
+   }
 
-    public async Task<List<GeneralSmsResponse>> SendBulkAsync(List<SmsMessage> smsMessageList,
-        CancellationToken cancellationToken = default)
-    {
-        var generalSmsResponses = new List<GeneralSmsResponse>();
+   public async Task<List<GeneralSmsResponse>> SendBulkAsync(List<SmsMessage> smsMessageList,
+      CancellationToken cancellationToken = default)
+   {
+      var generalSmsResponses = new List<GeneralSmsResponse>();
 
-        foreach (var smsMessage in smsMessageList)
-        {
-            SmsMessageValidator.ValidateAndTransform(smsMessage);
+      foreach (var smsMessage in smsMessageList)
+      {
+         SmsMessageValidator.ValidateAndTransform(smsMessage);
 
-            GetProviderConfigurationAndGenerateHttpClient(smsMessage.Channel);
+         GetProviderConfigurationAndGenerateHttpClient(smsMessage.Channel);
 
-            generalSmsResponses.AddRange(await SendSmsAsync(smsMessage, cancellationToken));
-        }
+         generalSmsResponses.AddRange(await SendSmsAsync(smsMessage, cancellationToken));
+      }
 
-        return generalSmsResponses;
-    }
+      return generalSmsResponses;
+   }
 
-    private void GetProviderConfigurationAndGenerateHttpClient(string channel)
-    {
-        _channel = channel;
-        _smsConfiguration = GetSmsConfigurationByChannel();
-        _httpClient = GenerateProviderHttpClient();
-    }
+   private void GetProviderConfigurationAndGenerateHttpClient(string channel)
+   {
+      _channel = channel;
+      _smsConfiguration = GetSmsConfigurationByChannel();
+      _httpClient = GenerateProviderHttpClient();
+   }
 
-    private SmsConfiguration GetSmsConfigurationByChannel()
-    {
-        return options.SmsConfigurations?.FirstOrDefault(x => x.Key == _channel).Value
-               ?? throw new ArgumentException("No valid provider with given channel");
-    }
+   private SmsConfiguration GetSmsConfigurationByChannel()
+   {
+      return options.SmsConfigurations?.FirstOrDefault(x => x.Key == _channel)
+                    .Value
+             ?? throw new ArgumentException("No valid provider with given channel");
+   }
 
-    private static SmsProviders GetSmsProvider(SmsConfiguration smsConfiguration)
-    {
-        Enum.TryParse(typeof(SmsProviders), smsConfiguration.Provider, out var providerValue);
+   private static SmsProviders GetSmsProvider(SmsConfiguration smsConfiguration)
+   {
+      Enum.TryParse(typeof(SmsProviders), smsConfiguration.Provider, out var providerValue);
 
-        if (providerValue is null)
-        {
-            throw new Exception("Wrong provider");
-        }
+      if (providerValue is null)
+      {
+         throw new Exception("Wrong provider");
+      }
 
-        var provider = (SmsProviders)providerValue;
+      var provider = (SmsProviders)providerValue;
 
-        return provider;
-    }
+      return provider;
+   }
 
-    private HttpClient GenerateProviderHttpClient()
-    {
-        var client = httpClientFactory.CreateClient(_channel);
+   private HttpClient GenerateProviderHttpClient()
+   {
+      var client = httpClientFactory.CreateClient(_channel);
 
-        var provider = GetSmsProvider(_smsConfiguration);
+      var provider = GetSmsProvider(_smsConfiguration);
 
-        var properties = _smsConfiguration.Properties;
+      var properties = _smsConfiguration.Properties;
 
-        return SetRequestHeaders(client, provider, properties);
-    }
+      return SetRequestHeaders(client, provider, properties);
+   }
 
-    private HttpClient SetRequestHeaders(HttpClient client, SmsProviders provider,
-        Dictionary<string, string> properties)
-    {
-        switch (provider)
-        {
-            case SmsProviders.Dexatel:
-                client.DefaultRequestHeaders.Add("X-Dexatel-Key", properties["X-Dexatel-Key"]);
-                break;
+   private HttpClient SetRequestHeaders(HttpClient client,
+      SmsProviders provider,
+      Dictionary<string, string> properties)
+   {
+      switch (provider)
+      {
+         case SmsProviders.Dexatel:
+            client.DefaultRequestHeaders.Add("X-Dexatel-Key", properties["X-Dexatel-Key"]);
+            break;
 
-            case SmsProviders.Twilio:
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
-                    Convert.ToBase64String(
-                        Encoding.ASCII.GetBytes($"{properties["SID"]}:{properties["AUTH_TOKEN"]}")));
-                break;
-        }
+         case SmsProviders.Twilio:
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
+               Convert.ToBase64String(
+                  Encoding.ASCII.GetBytes($"{properties["SID"]}:{properties["AUTH_TOKEN"]}")));
+            break;
+      }
 
-        return client;
-    }
+      return client;
+   }
 
-    private async Task<List<GeneralSmsResponse>> SendSmsAsync(SmsMessage smsMessage,
-        CancellationToken cancellationToken)
-    {
-        var provider = GetSmsProvider(_smsConfiguration);
+   private async Task<List<GeneralSmsResponse>> SendSmsAsync(SmsMessage smsMessage,
+      CancellationToken cancellationToken)
+   {
+      var provider = GetSmsProvider(_smsConfiguration);
 
-        switch (provider)
-        {
-            case SmsProviders.Dexatel:
-                return await SendSmsViaDexatelAsync(smsMessage, cancellationToken);
+      switch (provider)
+      {
+         case SmsProviders.Dexatel:
+            return await SendSmsViaDexatelAsync(smsMessage, cancellationToken);
 
-            case SmsProviders.Twilio:
-                return await SendSmsViaTwilioAsync(smsMessage, cancellationToken);
+         case SmsProviders.Twilio:
+            return await SendSmsViaTwilioAsync(smsMessage, cancellationToken);
 
-            default:
-                throw new InvalidOperationException();
-        }
-    }
+         default:
+            throw new InvalidOperationException();
+      }
+   }
 
-    private async Task<List<GeneralSmsResponse>> SendSmsViaDexatelAsync(SmsMessage smsMessage,
-        CancellationToken cancellationToken)
-    {
-        var request = new DexatelSmsSendRequest
-        {
-            Data = new DexatelSmsSendRequestData
+   private async Task<List<GeneralSmsResponse>> SendSmsViaDexatelAsync(SmsMessage smsMessage,
+      CancellationToken cancellationToken)
+   {
+      var request = new DexatelSmsSendRequest
+      {
+         Data = new DexatelSmsSendRequestData
+         {
+            From = _smsConfiguration.From,
+            To = smsMessage.Recipients.MakeDistinct(),
+            Text = smsMessage.Message,
+            Channel = "SMS"
+         }
+      };
+
+      var response = await PostAsyncViaDexatelHttpClient(request, cancellationToken);
+
+      var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+      var responseObject = JsonConvert.DeserializeObject<DexatelSmsSendResponse>(responseContent,
+         new JsonSerializerSettings
+         {
+            ContractResolver = new DefaultContractResolver
             {
-                From = _smsConfiguration.From,
-                To = smsMessage.Recipients.MakeDistinct(),
-                Text = smsMessage.Message,
-                Channel = "SMS"
+               NamingStrategy = new SnakeCaseNamingStrategy()
             }
-        };
+         });
 
-        var response = await PostAsyncViaDexatelHttpClient(request, cancellationToken);
+      return responseObject?.Data
+                           .Select(x =>
+                              new GeneralSmsResponse
+                              {
+                                 From = x.From,
+                                 To = x.To,
+                                 Status = x.Status,
+                                 CreateDate = x.CreateDate,
+                                 UpdateDate = x.UpdateDate,
+                                 OuterSmsId = x.Id,
+                                 Body = x.Text
+                              })
+                           .ToList() ?? [];
+   }
 
-        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+   private async Task<HttpResponseMessage> PostAsyncViaDexatelHttpClient(DexatelSmsSendRequest request,
+      CancellationToken cancellationToken)
+   {
+      return await _httpClient.PostAsync(
+         $"{SmsProviderIntegrations.BaseUrls[_smsConfiguration.Provider]}/v1/messages",
+         new StringContent(
+            JsonConvert.SerializeObject(request,
+               new JsonSerializerSettings
+               {
+                  ContractResolver = new DefaultContractResolver
+                  {
+                     NamingStrategy = new SnakeCaseNamingStrategy()
+                  }
+               }),
+            Encoding.UTF8,
+            "application/json"),
+         cancellationToken);
+   }
 
-        var responseObject = JsonConvert.DeserializeObject<DexatelSmsSendResponse>(responseContent,
+   private async Task<List<GeneralSmsResponse>> SendSmsViaTwilioAsync(SmsMessage smsMessage,
+      CancellationToken cancellationToken)
+   {
+      var result = new List<TwilioSmsSendResponse>();
+
+      foreach (var phone in smsMessage.Recipients.MakeDistinct())
+      {
+         var response = await PostAsyncViaTwilioHttpClient(phone, smsMessage.Message, cancellationToken);
+
+         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+         var responseObject = JsonConvert.DeserializeObject<TwilioSmsSendResponse>(responseContent,
             new JsonSerializerSettings
             {
-                ContractResolver = new DefaultContractResolver
-                {
-                    NamingStrategy = new SnakeCaseNamingStrategy()
-                }
+               ContractResolver = new DefaultContractResolver
+               {
+                  NamingStrategy = new SnakeCaseNamingStrategy()
+               }
             });
 
-        return responseObject?.Data.Select(x =>
-            new GeneralSmsResponse
-            {
-                From = x.From,
-                To = x.To,
-                Status = x.Status,
-                CreateDate = x.CreateDate,
-                UpdateDate = x.UpdateDate,
-                OuterSmsId = x.Id,
-                Body = x.Text
-            }).ToList() ?? [];
-    }
-    
-    private async Task<HttpResponseMessage> PostAsyncViaDexatelHttpClient(DexatelSmsSendRequest request,
-        CancellationToken cancellationToken)
-    {
-        return await _httpClient.PostAsync(
-            $"{SmsProviderIntegrations.BaseUrls[_smsConfiguration.Provider]}/v1/messages",
-            new StringContent(
-                JsonConvert.SerializeObject(request, new JsonSerializerSettings
-                {
-                    ContractResolver = new DefaultContractResolver
-                    {
-                        NamingStrategy = new SnakeCaseNamingStrategy()
-                    }
-                }),
-                Encoding.UTF8,
-                "application/json"), cancellationToken);
-    }
-    
-    private async Task<List<GeneralSmsResponse>> SendSmsViaTwilioAsync(SmsMessage smsMessage,
-        CancellationToken cancellationToken)
-    {
-        var result = new List<TwilioSmsSendResponse>();
+         result.Add(responseObject ?? new TwilioSmsSendResponse());
+      }
 
-        foreach (var phone in smsMessage.Recipients.MakeDistinct())
-        {
-            var response = await PostAsyncViaTwilioHttpClient(phone, smsMessage.Message, cancellationToken);
-            
-            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+      return result.Select(x =>
+                      new GeneralSmsResponse
+                      {
+                         From = x.From,
+                         To = x.To,
+                         Status = x.Status,
+                         CreateDate = x.DateCreated,
+                         UpdateDate = x.DateUpdated,
+                         OuterSmsId = x.Sid,
+                         Body = x.Body
+                      })
+                   .ToList();
+   }
 
-            var responseObject = JsonConvert.DeserializeObject<TwilioSmsSendResponse>(responseContent,
-                new JsonSerializerSettings
-                {
-                    ContractResolver = new DefaultContractResolver
-                    {
-                        NamingStrategy = new SnakeCaseNamingStrategy()
-                    }
-                });
-
-            result.Add(responseObject ?? new TwilioSmsSendResponse());
-        }
-
-        return result.Select(x =>
-            new GeneralSmsResponse
-            {
-                From = x.From,
-                To = x.To,
-                Status = x.Status,
-                CreateDate = x.DateCreated,
-                UpdateDate = x.DateUpdated,
-                OuterSmsId = x.Sid,
-                Body = x.Body
-            }).ToList();
-    }
-    
-    private async Task<HttpResponseMessage> PostAsyncViaTwilioHttpClient(string phone, string smsMessage,
-        CancellationToken cancellationToken)
-    {
-        return await _httpClient.PostAsync(
-            $"{SmsProviderIntegrations.BaseUrls[_smsConfiguration.Provider]}/2010-04-01/Accounts/{_smsConfiguration.Properties["SID"]}/Messages.json",
-            new FormUrlEncodedContent(new[]
-            {
-                new KeyValuePair<string, string>("To", phone),
-                new KeyValuePair<string, string>("From", _smsConfiguration.From),
-                new KeyValuePair<string, string>("Body", smsMessage)
-            }), cancellationToken);
-    }
+   private async Task<HttpResponseMessage> PostAsyncViaTwilioHttpClient(string phone,
+      string smsMessage,
+      CancellationToken cancellationToken)
+   {
+      return await _httpClient.PostAsync(
+         $"{SmsProviderIntegrations.BaseUrls[_smsConfiguration.Provider]}/2010-04-01/Accounts/{_smsConfiguration.Properties["SID"]}/Messages.json",
+         new FormUrlEncodedContent(new[]
+         {
+            new KeyValuePair<string, string>("To", phone),
+            new KeyValuePair<string, string>("From", _smsConfiguration.From),
+            new KeyValuePair<string, string>("Body", smsMessage)
+         }),
+         cancellationToken);
+   }
 }

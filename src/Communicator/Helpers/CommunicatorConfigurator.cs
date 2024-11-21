@@ -5,16 +5,19 @@ namespace Communicator.Helpers;
 
 internal static class CommunicatorConfigurator
 {
-    internal static CommunicatorOptions? ReadConfigurationOptions(IConfiguration configuration)
-    {
-        var communicatorSection = configuration.GetSection("Communicator");
+   internal static CommunicatorOptions? ReadConfigurationOptions(IConfiguration configuration)
+   {
+      var communicatorSection = configuration.GetSection("Communicator");
 
-        if (!communicatorSection.Exists()) return null;
+      if (!communicatorSection.Exists())
+      {
+         return null;
+      }
 
-        var communicatorOptions = new CommunicatorOptions();
+      var communicatorOptions = new CommunicatorOptions();
 
-        communicatorSection.Bind(communicatorOptions);
+      communicatorSection.Bind(communicatorOptions);
 
-        return communicatorOptions;
-    }
+      return communicatorOptions;
+   }
 }

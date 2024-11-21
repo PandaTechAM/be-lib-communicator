@@ -4,29 +4,29 @@ namespace Communicator.Helpers;
 
 internal static class SmsMessageValidator
 {
-    internal static void Validate(SmsMessage smsMessage)
-    {
-        if (smsMessage.Recipients.Count == 0)
-        {
-            throw new ArgumentException("At least one recipient is required", nameof(smsMessage.Recipients));
-        }
-        
-        char[] charsToCheck = ['(', ')', ' '];
-        if (smsMessage.Recipients.Any(number => number.Any(c => charsToCheck.Contains(c))))
-        {
-            throw new ArgumentException("Invalid phone number", nameof(smsMessage.Recipients));
-        }
-    }
-    
-    internal static SmsMessage ValidateAndTransform(SmsMessage smsMessage)
-    {
-        if (smsMessage.Recipients.Count == 0)
-        {
-            throw new ArgumentException("At least one recipient is required", nameof(smsMessage.Recipients));
-        }
+   internal static void Validate(SmsMessage smsMessage)
+   {
+      if (smsMessage.Recipients.Count == 0)
+      {
+         throw new ArgumentException("At least one recipient is required", nameof(smsMessage.Recipients));
+      }
 
-        smsMessage.Recipients = smsMessage.Recipients.Transform();
+      char[] charsToCheck = ['(', ')', ' '];
+      if (smsMessage.Recipients.Any(number => number.Any(c => charsToCheck.Contains(c))))
+      {
+         throw new ArgumentException("Invalid phone number", nameof(smsMessage.Recipients));
+      }
+   }
 
-        return smsMessage;
-    }
+   internal static SmsMessage ValidateAndTransform(SmsMessage smsMessage)
+   {
+      if (smsMessage.Recipients.Count == 0)
+      {
+         throw new ArgumentException("At least one recipient is required", nameof(smsMessage.Recipients));
+      }
+
+      smsMessage.Recipients = smsMessage.Recipients.Transform();
+
+      return smsMessage;
+   }
 }
