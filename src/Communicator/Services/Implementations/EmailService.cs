@@ -1,102 +1,113 @@
 ﻿using Communicator.Helpers;
-using MimeKit;
-using MailKit.Net.Smtp;
 using Communicator.Models;
-using Communicator.Models.GeneralResponses;
-using Communicator.Services.Interfaces;
 using Communicator.Options;
+using Communicator.Services.Interfaces;
+using MailKit.Net.Smtp;
+using MimeKit;
 
 namespace Communicator.Services.Implementations;
 
 internal class EmailService(CommunicatorOptions options)
-    : IEmailService
+   : IEmailService
 {
-    private EmailConfiguration _emailConfiguration = null!;
-    
-    public async Task<string> SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
-    {
-        EmailMessageValidator.Validate(emailMessage);
-        
-        var message = CreateMimeMessage(emailMessage);
-        return await SendEmailAsync(message, cancellationToken);
-    }
+   private EmailConfiguration _emailConfiguration = null!;
 
-    public async Task<List<string>> SendBulkAsync(List<EmailMessage> emailMessages, CancellationToken cancellationToken = default)
-    {
-        var responses = new List<string>();
-        
-        foreach (var emailMessage in emailMessages)
-        {
-            EmailMessageValidator.Validate(emailMessage);
-        }
+   public async Task<string> SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
+   {
+      EmailMessageValidator.Validate(emailMessage);
 
-        foreach (var message in emailMessages.Select(CreateMimeMessage))
-        {
-            responses.Add(await SendEmailAsync(message, cancellationToken));
-        }
+      var message = CreateMimeMessage(emailMessage);
+      return await SendEmailAsync(message, cancellationToken);
+   }
 
-        return responses;
-    }
+   public async Task<List<string>> SendBulkAsync(List<EmailMessage> emailMessages,
+      CancellationToken cancellationToken = default)
+   {
+      var responses = new List<string>();
 
-    private MimeMessage CreateMimeMessage(EmailMessage emailMessage)
-    {
-        _emailConfiguration = GetEmailConfigurationByChannel(emailMessage.Channel);
+      foreach (var emailMessage in emailMessages)
+      {
+         EmailMessageValidator.Validate(emailMessage);
+      }
 
-        var message = new MimeMessage();
-        message.From.Add(MailboxAddress.Parse(_emailConfiguration.SenderEmail));
-        message.To.AddRange(emailMessage.Recipients.MakeDistinct().Select(MailboxAddress.Parse));
-        message.Subject = emailMessage.Subject;
+      foreach (var message in emailMessages.Select(CreateMimeMessage))
+      {
+         responses.Add(await SendEmailAsync(message, cancellationToken));
+      }
 
-        var builder = new BodyBuilder();
-        if (emailMessage.IsBodyHtml)
-        {
-            builder.HtmlBody = emailMessage.Body;
-        }
-        else
-        {
-            builder.TextBody = emailMessage.Body;
-        }
+      return responses;
+   }
 
-        if (emailMessage.Attachments.Count != 0)
-        {
-            foreach (var attachment in emailMessage.Attachments)
-            {
-                builder.Attachments.Add(attachment.FileName, attachment.Content);
-            }
-        }
+   private MimeMessage CreateMimeMessage(EmailMessage emailMessage)
+   {
+      _emailConfiguration = GetEmailConfigurationByChannel(emailMessage.Channel);
 
-        message.Body = builder.ToMessageBody();
+      var message = new MimeMessage();
+      message.From.Add(MailboxAddress.Parse(_emailConfiguration.SenderEmail));
+      message.To.AddRange(emailMessage.Recipients
+                                      .MakeDistinct()
+                                      .Select(MailboxAddress.Parse));
+      message.Subject = emailMessage.Subject;
 
-        if (emailMessage.Cc.Count != 0)
-        {
-            message.Cc.AddRange(emailMessage.Cc.MakeDistinct().Select(MailboxAddress.Parse));
-        }
+      var builder = new BodyBuilder();
+      if (emailMessage.IsBodyHtml)
+      {
+         builder.HtmlBody = emailMessage.Body;
+      }
+      else
+      {
+         builder.TextBody = emailMessage.Body;
+      }
 
-        if (emailMessage.Bcc.Count != 0)
-        {
-            message.Bcc.AddRange(emailMessage.Bcc.MakeDistinct().Select(MailboxAddress.Parse));
-        }
+      if (emailMessage.Attachments.Count != 0)
+      {
+         foreach (var attachment in emailMessage.Attachments)
+         {
+            builder.Attachments.Add(attachment.FileName, attachment.Content);
+         }
+      }
 
-        return message;
-    }
+      message.Body = builder.ToMessageBody();
 
-    private async Task<string> SendEmailAsync(MimeMessage message, CancellationToken cancellationToken)
-    {
-        using var smtpClient = new SmtpClient();
-        smtpClient.Timeout = _emailConfiguration.TimeoutMs;
-        
-        await smtpClient.ConnectAsync(_emailConfiguration.SmtpServer, _emailConfiguration.SmtpPort, _emailConfiguration.UseSsl,
-            cancellationToken);
-        await smtpClient.AuthenticateAsync(_emailConfiguration.SmtpUsername, _emailConfiguration.SmtpPassword, cancellationToken);
-        var response = await smtpClient.SendAsync(message, cancellationToken);
-        await smtpClient.DisconnectAsync(true, cancellationToken);
+      if (emailMessage.Cc.Count != 0)
+      {
+         message.Cc.AddRange(emailMessage.Cc
+                                         .MakeDistinct()
+                                         .Select(MailboxAddress.Parse));
+      }
 
-        return response;
-    }
+      if (emailMessage.Bcc.Count != 0)
+      {
+         message.Bcc.AddRange(emailMessage.Bcc
+                                          .MakeDistinct()
+                                          .Select(MailboxAddress.Parse));
+      }
 
-    private EmailConfiguration GetEmailConfigurationByChannel(string channel)
-    {
-        return options.EmailConfigurations?.FirstOrDefault(x => x.Key == channel).Value
-            ?? throw new ArgumentException("No valid provider with given channel");
-    }
+      return message;
+   }
+
+   private async Task<string> SendEmailAsync(MimeMessage message, CancellationToken cancellationToken)
+   {
+      using var smtpClient = new SmtpClient();
+      smtpClient.Timeout = _emailConfiguration.TimeoutMs;
+
+      await smtpClient.ConnectAsync(_emailConfiguration.SmtpServer,
+         _emailConfiguration.SmtpPort,
+         _emailConfiguration.UseSsl,
+         cancellationToken);
+      await smtpClient.AuthenticateAsync(_emailConfiguration.SmtpUsername,
+         _emailConfiguration.SmtpPassword,
+         cancellationToken);
+      var response = await smtpClient.SendAsync(message, cancellationToken);
+      await smtpClient.DisconnectAsync(true, cancellationToken);
+
+      return response;
+   }
+
+   private EmailConfiguration GetEmailConfigurationByChannel(string channel)
+   {
+      return options.EmailConfigurations?.FirstOrDefault(x => x.Key == channel)
+                    .Value
+             ?? throw new ArgumentException("No valid provider with given channel");
+   }
 }

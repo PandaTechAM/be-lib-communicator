@@ -2,6 +2,6 @@
 
 internal enum SmsProviders
 {
-    Dexatel = 1,
-    Twilio = 2
+   Dexatel = 1,
+   Twilio = 2
 }

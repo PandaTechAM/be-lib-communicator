@@ -1,33 +1,37 @@
 # 1. PandaTech.Communicator
 
 - [1. EasyRateLimiter](#1-easyratelimiter)
-  - [1.1. Introduction](#11-introduction)
-  - [1.2. Installation](#12-installation)
-  - [1.3. Setup](#13-setup)
-    - [1.3.1. Program.cs Example](#131-programcs-example)
-      - [1.3.1.1. Using WebApplicationBuilder](#1311-using-webapplicationbuilder)
-      - [1.3.1.2. Using IServiceCollection](#1312-using-iservicecollection)
-    - [1.3.2. Appsettings.json Example](#132-appsettingsjson-example)
-  - [1.4. Configuration Options Explained](#14-configuration-options-explained)
-  - [1.5. Usage](#15-usage)
-    - [1.5.1. Send SMS message](#151-send-sms-message)
-    - [1.5.2. Send Email message](#152-send-email-message)
-  - [1.6. Limitations](#16-limitations)
-  - [1.7. License](#17-license)
+    - [1.1. Introduction](#11-introduction)
+    - [1.2. Installation](#12-installation)
+    - [1.3. Setup](#13-setup)
+        - [1.3.1. Program.cs Example](#131-programcs-example)
+            - [1.3.1.1. Using WebApplicationBuilder](#1311-using-webapplicationbuilder)
+            - [1.3.1.2. Using IServiceCollection](#1312-using-iservicecollection)
+        - [1.3.2. Appsettings.json Example](#132-appsettingsjson-example)
+    - [1.4. Configuration Options Explained](#14-configuration-options-explained)
+    - [1.5. Usage](#15-usage)
+        - [1.5.1. Send SMS message](#151-send-sms-message)
+        - [1.5.2. Send Email message](#152-send-email-message)
+    - [1.6. Limitations](#16-limitations)
+    - [1.7. License](#17-license)
 
 ## 1.1. Introduction
-**PandaTech.Communicator** is aimed to send Email and SMS messages to the clients of your service where you use this library.
 
-- **Email:** By given setup it's easy and fast to configure and setup Email providers for later use by different channels.
-- **SMS:** By given setup it's easy and fast to configure and setup already integrated SMS providers for later use by different channels.
-  - **Dexatel**
-  - **Twilio**
+**PandaTech.Communicator** is aimed to send Email and SMS messages to the clients of your service where you use this
+library.
+
+- **Email:** By given setup it's easy and fast to configure and setup Email providers for later use by different
+  channels.
+- **SMS:** By given setup it's easy and fast to configure and setup already integrated SMS providers for later use by
+  different channels.
+    - **Dexatel**
+    - **Twilio**
 
 This package is ideal for efficient and reliable messaging in any application.
 
 ## 1.2. Installation
 
-Install this NuGet library directly from the IDE package installer or by following command: 
+Install this NuGet library directly from the IDE package installer or by following command:
 
 `dotnet add package PandaTech.Communicator`
 
@@ -35,11 +39,14 @@ Install this NuGet library directly from the IDE package installer or by followi
 
 To incorporate PandaTech.Communicator into your project, you have 2 primary methods to setup in your `Program.cs`:
 
-The first method directly using `WebApplicationBuilder` from which `IConfiguration` is directly used. But for the second method builder is not accessible, so we pass `IConfiguration` into it as parameter.   
+The first method directly using `WebApplicationBuilder` from which `IConfiguration` is directly used. But for the second
+method builder is not accessible, so we pass `IConfiguration` into it as parameter.
+
 - `builder.AddCommunicator();`
 - `services.AddCommunicator(configuration);`
 
-Configuration options can be specified either in `appsettings.json` or directly in `Program.cs`, with the latter taking precedence.
+Configuration options can be specified either in `appsettings.json` or directly in `Program.cs`, with the latter taking
+precedence.
 
 There are several supported channels which must be kept during setup:
 
@@ -63,13 +70,15 @@ SmsChannels
 };
 ```
 
-For each channel can be setup same provider, but it's recommended to have different sender, as they are dedicated for different purposes.
+For each channel can be setup same provider, but it's recommended to have different sender, as they are dedicated for
+different purposes.
 
 ### 1.3.1. Program.cs Example
 
-In case of using SSL by setting UseSsl = true use port number 456, otherwise use 587 for non SSL connection. 
+In case of using SSL by setting UseSsl = true use port number 456, otherwise use 587 for non SSL connection.
 
 #### 1.3.1.1. Using `WebApplicationBuilder`
+
 ```csharp
 builder.AddCommunicator(options =>
 {
@@ -255,19 +264,25 @@ services.AddCommunicator(configuration, options =>
   }
 }
 ```
+
 The configuration options in `appsettings.json` and `program.cs` (priority) are identical.
 
 ## 1.4. Configuration Options Explained
 
 - **Communicator:** Global settings for PandaTech.Communicator
-- **SmsFake:** This setup is for fake SMS service to be used which doesn't send real SMS messages and just return `TTask.CompletedTask`.
-- **SmsConfigurations:** SMS configurations given by `appsettings.json` or via `builder.AddCommunicator()` options for SMS.
-- **EmailFake:** This setup is for fake Email service to be used which doesn't send real SMS messages and just return `TTask.CompletedTask`.
-- **EmailConfigurations:** Email configurations given by `appsettings.json` or via `builder.AddCommunicator()` options for Email.
+- **SmsFake:** This setup is for fake SMS service to be used which doesn't send real SMS messages and just return
+  `TTask.CompletedTask`.
+- **SmsConfigurations:** SMS configurations given by `appsettings.json` or via `builder.AddCommunicator()` options for
+  SMS.
+- **EmailFake:** This setup is for fake Email service to be used which doesn't send real SMS messages and just return
+  `TTask.CompletedTask`.
+- **EmailConfigurations:** Email configurations given by `appsettings.json` or via `builder.AddCommunicator()` options
+  for Email.
 
 ## 1.5. Usage
 
-In order to use the library, you need to generate `SmsMessage` or `EmailMessage` and use one of the interfaces mentioned above for the service you need to use.
+In order to use the library, you need to generate `SmsMessage` or `EmailMessage` and use one of the interfaces mentioned
+above for the service you need to use.
 
 Both of them support multiple recipients.
 
@@ -298,8 +313,9 @@ Channel is set by `EmailChannels` or by `SmsChannels` classes with constant valu
 
 There are 2 interfaces `ISmsService` and `IEmailService` responsible for individual cases SMS or Email.
 Methods for sending SMS/Email messages are:
-  - **SendAsync:**
-  - **SendBulkAsync:**
+
+- **SendAsync:**
+- **SendBulkAsync:**
 
 The structure of the service interfaces are shown below.
 
@@ -329,9 +345,9 @@ var sms = new SmsMessage
 await smsService.SendAsync(sms);
 ```
 
-Sms service returns general response which includes general properties in already integrated services. 
+Sms service returns general response which includes general properties in already integrated services.
 
-Both methods return `List<GeneralSmsResponse>` when you use them while sending sms. 
+Both methods return `List<GeneralSmsResponse>` when you use them while sending sms.
 If you set a variable to the call, you will be able to use returned response.
 
 ```csharp
@@ -360,8 +376,11 @@ var email = new EmailMessage
 };
 await emailService.SendAsync(email);
 ```
-Both methods return response (SendAsync - `string`; SendBulkAsync - `List<string>`) when you use them while sending email.
-If you set a variable to the call, you will be able to use returned response. Response structure varies on different email providers, so you can create your ouw return type and map returned string into it.
+
+Both methods return response (SendAsync - `string`; SendBulkAsync - `List<string>`) when you use them while sending
+email.
+If you set a variable to the call, you will be able to use returned response. Response structure varies on different
+email providers, so you can create your ouw return type and map returned string into it.
 
 ```text
 2.0.0 OK 8ONXSST18NU4.DSCFVS8PQ0Q13@test AM0PR08MB5346.eurprd08.prod.outlook.com
