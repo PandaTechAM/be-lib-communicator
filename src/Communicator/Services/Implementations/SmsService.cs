@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using Communicator.Enums;
 using Communicator.Helpers;
 using Communicator.Models;
@@ -8,13 +9,17 @@ using Communicator.Models.GeneralResponses;
 using Communicator.Models.Twilio;
 using Communicator.Options;
 using Communicator.Services.Interfaces;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace Communicator.Services.Implementations;
 
 internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpClientFactory) : ISmsService
 {
+   private static JsonSerializerOptions SnakeCaseJsonSerializerOption =>
+      new()
+      {
+         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+      };
+
    private string _channel = null!;
    private HttpClient _httpClient = null!;
    private SmsConfiguration _smsConfiguration = null!;
@@ -141,14 +146,8 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
 
       var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
-      var responseObject = JsonConvert.DeserializeObject<DexatelSmsSendResponse>(responseContent,
-         new JsonSerializerSettings
-         {
-            ContractResolver = new DefaultContractResolver
-            {
-               NamingStrategy = new SnakeCaseNamingStrategy()
-            }
-         });
+      var responseObject =
+         JsonSerializer.Deserialize<DexatelSmsSendResponse>(responseContent, SnakeCaseJsonSerializerOption);
 
       return responseObject?.Data
                            .Select(x =>
@@ -171,14 +170,7 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
       return await _httpClient.PostAsync(
          $"{SmsProviderIntegrations.BaseUrls[_smsConfiguration.Provider]}/v1/messages",
          new StringContent(
-            JsonConvert.SerializeObject(request,
-               new JsonSerializerSettings
-               {
-                  ContractResolver = new DefaultContractResolver
-                  {
-                     NamingStrategy = new SnakeCaseNamingStrategy()
-                  }
-               }),
+            JsonSerializer.Serialize(request, SnakeCaseJsonSerializerOption),
             Encoding.UTF8,
             "application/json"),
          cancellationToken);
@@ -195,14 +187,8 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
 
          var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
-         var responseObject = JsonConvert.DeserializeObject<TwilioSmsSendResponse>(responseContent,
-            new JsonSerializerSettings
-            {
-               ContractResolver = new DefaultContractResolver
-               {
-                  NamingStrategy = new SnakeCaseNamingStrategy()
-               }
-            });
+         var responseObject =
+            JsonSerializer.Deserialize<TwilioSmsSendResponse>(responseContent, SnakeCaseJsonSerializerOption);
 
          result.Add(responseObject ?? new TwilioSmsSendResponse());
       }
