@@ -8,13 +8,13 @@
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <Authors>Pandatech</Authors>
         <Copyright>MIT</Copyright>
-        <Version>2.0.0</Version>
+        <Version>2.1.0</Version>
         <PackageId>Pandatech.Communicator</PackageId>
         <Title>SMS and Email Communication helper</Title>
         <PackageTags>Pandatech, library, Sms, Email, Messages</PackageTags>
         <Description>A versatile .NET library for integrating SMS and email functionalities. Supports multiple SMS providers and easy configuration through appsettings.json or web builders, ideal for efficient and reliable messaging in any application..</Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-communicator</RepositoryUrl>
-        <PackageReleaseNotes>.Net 9 Upgrade</PackageReleaseNotes>
+        <PackageReleaseNotes>Newton soft removal</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,7 +26,6 @@
         <PackageReference Include="MailKit" Version="4.8.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
         <PackageReference Include="MimeKit" Version="4.8.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <PackageReference Include="Pandatech.RegexBox" Version="3.0.0" />
     </ItemGroup>
 
