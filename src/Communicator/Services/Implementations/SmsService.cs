@@ -19,6 +19,11 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
       {
          PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
       };
+   private static JsonSerializerOptions CamelCaseJsonSerializerOption =>
+      new()
+      {
+         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+      };
 
    private string _channel = null!;
    private HttpClient _httpClient = null!;
@@ -147,7 +152,7 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
       var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
       var responseObject =
-         JsonSerializer.Deserialize<DexatelSmsSendResponse>(responseContent, SnakeCaseJsonSerializerOption);
+         JsonSerializer.Deserialize<DexatelSmsSendResponse>(responseContent, CamelCaseJsonSerializerOption);
 
       return responseObject?.Data
                            .Select(x =>
@@ -188,7 +193,7 @@ internal class SmsService(CommunicatorOptions options, IHttpClientFactory httpCl
          var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
          var responseObject =
-            JsonSerializer.Deserialize<TwilioSmsSendResponse>(responseContent, SnakeCaseJsonSerializerOption);
+            JsonSerializer.Deserialize<TwilioSmsSendResponse>(responseContent, CamelCaseJsonSerializerOption);
 
          result.Add(responseObject ?? new TwilioSmsSendResponse());
       }
