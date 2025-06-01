@@ -1,5 +1,5 @@
 ﻿using Communicator.Extensions;
-using RegexBox;
+using SharedKernel.Helpers;
 
 namespace Communicator.Helpers;
 
@@ -9,7 +9,7 @@ internal static class SmsRecipients
 
    internal static string Transform(this string recipient)
    {
-      if (PandaValidator.IsPandaFormattedPhoneNumber(recipient)
+      if (ValidationHelper.IsPandaFormattedPhoneNumber(recipient)
           || recipient.Any(c => CharsToCheck.Contains(c)))
       {
          recipient = recipient.RemovePhoneFormatParenthesesAndAdditionSign();
@@ -20,7 +20,7 @@ internal static class SmsRecipients
 
    internal static List<string> Transform(this List<string> recipients)
    {
-      foreach (var recipient in recipients.Where(PandaValidator.IsPandaFormattedPhoneNumber))
+      foreach (var recipient in recipients.Where(ValidationHelper.IsPandaFormattedPhoneNumber))
       {
          recipient.RemovePhoneFormatParenthesesAndAdditionSign();
       }
