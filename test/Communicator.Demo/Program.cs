@@ -2,7 +2,6 @@ using Communicator.Demo.MessageTemplates;
 using Communicator.Enums;
 using Communicator.Extensions;
 using Communicator.Models;
-using Communicator.Options;
 using Communicator.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
