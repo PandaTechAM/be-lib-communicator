@@ -1,4 +1,6 @@
-﻿using Communicator.Helpers;
+﻿using System.Diagnostics;
+using System.Net;
+using Communicator.Helpers;
 using Communicator.Models;
 using Communicator.Options;
 using Communicator.Services.Interfaces;
@@ -77,12 +79,22 @@ internal sealed class EmailService(CommunicatorOptions options) : IEmailService
 
    private static async Task ConnectAndAuthAsync(SmtpClient client, EmailConfiguration config, CancellationToken ct)
    {
+      DumpNetState(config.SmtpServer);
+
       var socketOptions = ResolveSocketOptions(config.SmtpPort);
+
+      var sw = Stopwatch.StartNew();
+      Console.WriteLine(
+         $"[{DateTimeOffset.UtcNow:O}] [EmailService] ConnectAsync {config.SmtpServer}:{config.SmtpPort} socket={socketOptions} timeout={client.Timeout} ...");
       await client.ConnectAsync(config.SmtpServer, config.SmtpPort, socketOptions, ct);
+      Console.WriteLine(
+         $"[{DateTimeOffset.UtcNow:O}] [EmailService] Connect OK ({sw.ElapsedMilliseconds}ms) secure={client.IsSecure} tls={client.SslProtocol}");
 
       if (!string.IsNullOrWhiteSpace(config.SmtpUsername))
       {
+         Console.WriteLine($"[{DateTimeOffset.UtcNow:O}] [EmailService] AuthenticateAsync ...");
          await client.AuthenticateAsync(config.SmtpUsername, config.SmtpPassword, ct);
+         Console.WriteLine($"[{DateTimeOffset.UtcNow:O}] [EmailService] Authenticate OK ({sw.ElapsedMilliseconds}ms)");
       }
    }
 
@@ -166,5 +178,25 @@ internal sealed class EmailService(CommunicatorOptions options) : IEmailService
 
       return config ??
              throw new ArgumentException("No valid email configuration for the given channel.", nameof(channel));
+   }
+
+   private static void DumpNetState(string host)
+   {
+      AppContext.TryGetSwitch("System.Net.DisableIPv6", out var sw);
+      var env = Environment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_DISABLEIPV6");
+
+      Console.WriteLine(
+         $"[{DateTimeOffset.UtcNow:O}] [EmailService] DisableIPv6Switch={sw} DOTNET_SYSTEM_NET_DISABLEIPV6='{env}'");
+
+      try
+      {
+         var addrs = Dns.GetHostAddresses(host);
+         Console.WriteLine($"[{DateTimeOffset.UtcNow:O}] [EmailService] DNS {host} => " +
+                           string.Join(", ", addrs.Select(a => $"{a}({a.AddressFamily})")));
+      }
+      catch (Exception ex)
+      {
+         Console.WriteLine($"[{DateTimeOffset.UtcNow:O}] [EmailService] DNS ERROR {ex.GetType().Name}: {ex.Message}");
+      }
    }
 }
