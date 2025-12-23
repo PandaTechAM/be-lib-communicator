@@ -8,7 +8,7 @@
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <Authors>Pandatech</Authors>
         <Copyright>MIT</Copyright>
-        <Version>2.2.1</Version>
+        <Version>2.2.2</Version>
         <PackageId>Pandatech.Communicator</PackageId>
         <Title>SMS and Email Communication helper</Title>
         <PackageTags>pandatech;communicator;messaging;email;smtp;mailkit;mimekit;sms;twilio;dexatel;notifications;transactional;dotnet;net9;minimal-api;dependency-injection</PackageTags>
