@@ -1,4 +1,6 @@
-﻿using Communicator.Helpers;
+﻿using System.Net;
+using System.Net.Sockets;
+using Communicator.Helpers;
 using Communicator.Models;
 using Communicator.Options;
 using Communicator.Services.Interfaces;
@@ -77,13 +79,69 @@ internal sealed class EmailService(CommunicatorOptions options) : IEmailService
 
    private static async Task ConnectAndAuthAsync(SmtpClient client, EmailConfiguration config, CancellationToken ct)
    {
-      var socketOptions = ResolveSocketOptions(config.SmtpPort);
-      await client.ConnectAsync(config.SmtpServer, config.SmtpPort, socketOptions, ct);
+      var options = ResolveSocketOptions(config.SmtpPort);
+      client.Timeout = config.TimeoutMs;
 
-      if (!string.IsNullOrWhiteSpace(config.SmtpUsername))
+      var addresses = await Dns.GetHostAddressesAsync(config.SmtpServer, ct);
+
+      var ordered = addresses
+                    .OrderByDescending(a => a.AddressFamily == AddressFamily.InterNetwork) // IPv4 first
+                    .ToArray();
+
+      Exception? last = null;
+
+      foreach (var ip in ordered)
       {
-         await client.AuthenticateAsync(config.SmtpUsername, config.SmtpPassword, ct);
+         NetworkStream? stream = null;
+
+         try
+         {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(config.TimeoutMs);
+
+            var socket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            await socket.ConnectAsync(new IPEndPoint(ip, config.SmtpPort), cts.Token);
+
+            stream = new NetworkStream(socket, ownsSocket: true);
+
+            await client.ConnectAsync(stream, config.SmtpServer, config.SmtpPort, options, cts.Token);
+
+            stream = null; // MailKit now owns the connection
+
+            await client.AuthenticateAsync(config.SmtpUsername, config.SmtpPassword, cts.Token);
+            return;
+         }
+         catch (Exception ex)
+         {
+            last = ex;
+
+            try
+            {
+               if (stream is not null)
+               {
+                  await stream.DisposeAsync();
+               }
+            }
+            catch
+            {
+               // ignored
+            }
+
+            try
+            {
+               if (client.IsConnected)
+               {
+                  await client.DisconnectAsync(true, CancellationToken.None);
+               }
+            }
+            catch
+            {
+               // ignored
+            }
+         }
       }
+
+      throw last ?? new TimeoutException("SMTP connect failed.");
    }
 
    private static SecureSocketOptions ResolveSocketOptions(int port)
