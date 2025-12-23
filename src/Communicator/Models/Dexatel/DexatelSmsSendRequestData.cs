@@ -2,8 +2,8 @@ namespace Communicator.Models.Dexatel;
 
 public class DexatelSmsSendRequestData
 {
-   public string From { get; set; } = null!;
-   public List<string> To { get; set; } = null!;
-   public string Text { get; set; } = null!;
-   public string Channel { get; set; } = null!;
+   public required string From { get; set; }
+   public required List<string> To { get; set; }
+   public required string Text { get; set; }
+   public required string Channel { get; set; }
 }

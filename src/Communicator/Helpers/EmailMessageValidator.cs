@@ -6,24 +6,24 @@ internal static class EmailMessageValidator
 {
    internal static void Validate(EmailMessage emailMessage)
    {
-      if (emailMessage.Recipients.Count == 0)
+      if (emailMessage.Recipients is null || emailMessage.Recipients.Count == 0)
       {
-         throw new ArgumentException("At least one recipient is required", nameof(emailMessage.Recipients));
+         throw new ArgumentException("Recipients must contain at least one email address.", nameof(emailMessage));
       }
 
-      if (emailMessage.Recipients.Any(email => !ValidationHelper.IsEmail(email)))
+      if (emailMessage.Recipients.Any(e => !ValidationHelper.IsEmail(e)))
       {
-         throw new ArgumentException("Invalid email address", nameof(emailMessage.Recipients));
+         throw new ArgumentException("Recipients contains an invalid email address.", nameof(emailMessage));
       }
 
-      if (emailMessage.Cc.Count != 0 && emailMessage.Cc.Any(email => !ValidationHelper.IsEmail(email)))
+      if (emailMessage.Cc.Any(e => !ValidationHelper.IsEmail(e)))
       {
-         throw new ArgumentException("Invalid email address", nameof(emailMessage.Cc));
+         throw new ArgumentException("Cc contains an invalid email address.", nameof(emailMessage));
       }
 
-      if (emailMessage.Bcc.Count != 0 && emailMessage.Bcc.Any(email => !ValidationHelper.IsEmail(email)))
+      if (emailMessage.Bcc.Any(e => !ValidationHelper.IsEmail(e)))
       {
-         throw new ArgumentException("Invalid email address", nameof(emailMessage.Bcc));
+         throw new ArgumentException("Bcc contains an invalid email address.", nameof(emailMessage));
       }
    }
 }

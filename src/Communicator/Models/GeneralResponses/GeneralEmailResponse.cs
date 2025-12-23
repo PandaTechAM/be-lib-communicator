@@ -10,11 +10,11 @@ public class GeneralEmailResponse
    private const string OutlookPattern =
       @"^(?<Version>\d+\.\d+\.\d+)\s(?<Status>\w+)\s<(?<EmailId>[^>]+)>\s\[Hostname=(?<Hostname>[^\]]+)\]$";
 
-   public string Status { get; set; } = null!;
-   public string Code { get; set; } = null!;
+   public required string Status { get; set; }
+   public required string Code { get; set; }
    public string? TrackingId { get; set; }
-   public string Id { get; set; } = null!;
-   public string Service { get; set; } = null!;
+   public required string Id { get; set; }
+   public required string Service { get; set; }
 
    public static GeneralEmailResponse Parse(string response)
    {
@@ -75,28 +75,28 @@ public class GeneralEmailResponse
             }
          }
 
-         if (match.Groups.Count == 5)
+         switch (match.Groups.Count)
          {
-            responseList.Add(new GeneralEmailResponse
-            {
-               Status = match.Groups[1].Value,
-               Code = match.Groups[2].Value,
-               TrackingId = null,
-               Id = match.Groups[3].Value,
-               Service = match.Groups[4].Value
-            });
-         }
-
-         if (match.Groups.Count == 6)
-         {
-            responseList.Add(new GeneralEmailResponse
-            {
-               Status = match.Groups[1].Value,
-               Code = match.Groups[2].Value,
-               TrackingId = match.Groups[3].Value,
-               Id = match.Groups[4].Value,
-               Service = match.Groups[5].Value
-            });
+            case 5:
+               responseList.Add(new GeneralEmailResponse
+               {
+                  Status = match.Groups[1].Value,
+                  Code = match.Groups[2].Value,
+                  TrackingId = null,
+                  Id = match.Groups[3].Value,
+                  Service = match.Groups[4].Value
+               });
+               break;
+            case 6:
+               responseList.Add(new GeneralEmailResponse
+               {
+                  Status = match.Groups[1].Value,
+                  Code = match.Groups[2].Value,
+                  TrackingId = match.Groups[3].Value,
+                  Id = match.Groups[4].Value,
+                  Service = match.Groups[5].Value
+               });
+               break;
          }
       }
 

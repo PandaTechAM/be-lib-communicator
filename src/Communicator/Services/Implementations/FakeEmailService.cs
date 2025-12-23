@@ -7,7 +7,7 @@ namespace Communicator.Services.Implementations;
 
 internal class FakeEmailService(ILogger<FakeEmailService> logger) : IEmailService
 {
-   public Task<string> SendAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
+   public Task<string> SendAsync(EmailMessage emailMessage, CancellationToken ct = default)
    {
       EmailMessageValidator.Validate(emailMessage);
 
@@ -20,7 +20,7 @@ internal class FakeEmailService(ILogger<FakeEmailService> logger) : IEmailServic
    }
 
    public Task<List<string>> SendBulkAsync(List<EmailMessage> emailMessages,
-      CancellationToken cancellationToken = default)
+      CancellationToken ct = default)
    {
       foreach (var emailMessage in emailMessages)
       {
