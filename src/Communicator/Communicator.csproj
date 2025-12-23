@@ -8,13 +8,23 @@
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <Authors>Pandatech</Authors>
         <Copyright>MIT</Copyright>
-        <Version>2.1.4</Version>
+        <Version>2.2.0</Version>
         <PackageId>Pandatech.Communicator</PackageId>
         <Title>SMS and Email Communication helper</Title>
-        <PackageTags>Pandatech, library, Sms, Email, Messages</PackageTags>
-        <Description>A versatile .NET library for integrating SMS and email functionalities. Supports multiple SMS providers and easy configuration through appsettings.json or web builders, ideal for efficient and reliable messaging in any application..</Description>
+        <PackageTags>pandatech;communicator;messaging;email;smtp;mailkit;mimekit;sms;twilio;dexatel;notifications;transactional;dotnet;net9;minimal-api;dependency-injection</PackageTags>
+        <Description>
+            PandaTech.Communicator is a .NET 9 library for sending Email (SMTP via MailKit) and SMS through a simple, DI-friendly API.
+            It supports multiple channels per application and includes built-in SMS providers (Dexatel, Twilio) with configuration via
+            appsettings.json or programmatic setup for reliable messaging across different use cases.
+        </Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-communicator</RepositoryUrl>
-        <PackageReleaseNotes>Nuget updates</PackageReleaseNotes>
+        <PackageReleaseNotes>
+            2.2.0
+            - Refined SMTP behavior for modern submission ports (587 STARTTLS / 465 implicit TLS).
+            - Improved internal validation and error messages for analyzers.
+            - Refactored internal email/sms sending code for safer concurrency and cleaner structure (no public contract changes).
+            - Documentation overhaul and updated examples.
+        </PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,9 +33,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="MailKit" Version="4.13.0" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
-        <PackageReference Include="MimeKit" Version="4.13.0" />
+        <PackageReference Include="MailKit" Version="4.14.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8"/>
+        <PackageReference Include="MimeKit" Version="4.14.0"/>
+        <PackageReference Include="Pandatech.Analyzers" Version="1.6.0"/>
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.17.0.131074">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
 </Project>

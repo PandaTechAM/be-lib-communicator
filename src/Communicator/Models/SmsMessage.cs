@@ -2,7 +2,7 @@
 
 public class SmsMessage
 {
-   public List<string> Recipients { get; set; } = null!;
-   public string Message { get; set; } = null!;
-   public string Channel { get; set; } = null!;
+   public required List<string> Recipients { get; set; }
+   public required string Message { get; set; }
+   public required string Channel { get; set; }
 }

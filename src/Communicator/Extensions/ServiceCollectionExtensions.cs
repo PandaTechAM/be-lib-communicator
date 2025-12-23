@@ -30,7 +30,7 @@ public static class ServiceCollectionExtensions
       }
       else
       {
-         throw new Exception("No any Configuration Option setup.");
+         throw new ArgumentException("No any Configuration Option setup.");
       }
 
       RegisterSmsHttpClientsFromConfig(services, options);

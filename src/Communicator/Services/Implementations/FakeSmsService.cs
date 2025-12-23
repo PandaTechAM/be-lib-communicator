@@ -8,7 +8,7 @@ namespace Communicator.Services.Implementations;
 
 internal class FakeSmsService(ILogger<FakeSmsService> logger) : ISmsService
 {
-   public Task<List<GeneralSmsResponse>> SendAsync(SmsMessage smsMessage, CancellationToken cancellationToken = default)
+   public Task<List<GeneralSmsResponse>> SendAsync(SmsMessage smsMessage, CancellationToken ct = default)
    {
       smsMessage = SmsMessageValidator.ValidateAndTransform(smsMessage);
 
@@ -23,7 +23,7 @@ internal class FakeSmsService(ILogger<FakeSmsService> logger) : ISmsService
    }
 
    public Task<List<GeneralSmsResponse>> SendBulkAsync(List<SmsMessage> smsMessageList,
-      CancellationToken cancellationToken = default)
+      CancellationToken ct = default)
    {
       foreach (var smsMessage in smsMessageList)
       {
