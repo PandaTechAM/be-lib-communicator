@@ -33,7 +33,7 @@ internal static class OptionsValidator
       if (notSupportedChannels is not null && notSupportedChannels.Count != 0)
       {
          throw new InvalidOperationException(
-            $"There are unsupported Channels provided {string.Join(",", notSupportedChannels!)}.");
+            $"There are unsupported Channels provided {string.Join(",", notSupportedChannels)}.");
       }
    }
 }
