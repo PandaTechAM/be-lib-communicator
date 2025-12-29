@@ -1,0 +1,16 @@
+<Solution>
+    <Folder Name="/Solution Items/">
+        <File Path=".editorconfig"/>
+        <File Path=".github/workflows/main.yml"/>
+        <File Path=".gitignore"/>
+        <File Path="global.json"/>
+        <File Path="Readme.md"/>
+    </Folder>
+    <Folder Name="/src/">
+        <Project Path="src/Communicator/Communicator.csproj"/>
+    </Folder>
+    <Folder Name="/tests/">
+        <Project Path="test/Communicator.Demo/Communicator.Demo.csproj"/>
+        <Project Path="test/Communicator.Tests/Communicator.Tests.csproj"/>
+    </Folder>
+</Solution>

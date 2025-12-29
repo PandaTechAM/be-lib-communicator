@@ -160,7 +160,6 @@ internal sealed class SmsService(CommunicatorOptions options, IHttpClientFactory
       var responseObject = JsonSerializer.Deserialize<DexatelSmsSendResponse>(responseContent, CamelCaseJson);
 
       return responseObject?.Data
-                           ?
                            .Select(x => new GeneralSmsResponse
                            {
                               From = x.From,
