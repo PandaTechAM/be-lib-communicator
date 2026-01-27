@@ -8,7 +8,7 @@
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <Authors>Pandatech</Authors>
         <Copyright>MIT</Copyright>
-        <Version>3.0.0</Version>
+        <Version>3.0.1</Version>
         <PackageId>Pandatech.Communicator</PackageId>
         <Title>SMS and Email Communication helper</Title>
         <PackageTags>pandatech;communicator;messaging;email;smtp;mailkit;mimekit;sms;twilio;dexatel;notifications;transactional;dotnet;net9;minimal-api;dependency-injection</PackageTags>
@@ -19,7 +19,7 @@
         </Description>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-communicator</RepositoryUrl>
         <PackageReleaseNotes>
-            Dotnet 10 upgrade
+            nuget updates
         </PackageReleaseNotes>
 
         <!-- Never run analyzers as part of compilation (local, CI, dotnet build/test/publish) -->
@@ -39,10 +39,10 @@
 
     <ItemGroup>
         <PackageReference Include="MailKit" Version="4.14.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
         <PackageReference Include="MimeKit" Version="4.14.0"/>
-        <PackageReference Include="Pandatech.Analyzers" Version="1.6.0"/>
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.17.0.131074">
+        <PackageReference Include="Pandatech.Analyzers" Version="2.1.0" />
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.18.0.131500">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
