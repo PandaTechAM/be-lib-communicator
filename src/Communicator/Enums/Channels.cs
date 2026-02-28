@@ -4,27 +4,24 @@ namespace Communicator.Enums;
 
 internal static class Channels
 {
-   internal static List<string> EmailChannels => GetEmailChannels();
+   internal static readonly IReadOnlyList<string> EmailChannels = GetEmailChannels();
+   internal static readonly IReadOnlyList<string> SmsChannels = GetSmsChannels();
 
-   internal static List<string> SmsChannels => GetSmsChannels();
-
-   private static List<string> GetEmailChannels()
+   private static IReadOnlyList<string> GetEmailChannels()
    {
-      var fields = typeof(EmailChannels).GetFields(BindingFlags.Public | BindingFlags.Static);
-
-      return fields
-             .Where(field => field.FieldType == typeof(string))
-             .Select(field => (string)field.GetValue(null)!)
-             .ToList();
+      return typeof(EmailChannels)
+             .GetFields(BindingFlags.Public | BindingFlags.Static)
+             .Where(f => f.FieldType == typeof(string))
+             .Select(f => (string)f.GetValue(null)!)
+             .ToArray();
    }
 
-   private static List<string> GetSmsChannels()
+   private static IReadOnlyList<string> GetSmsChannels()
    {
-      var fields = typeof(SmsChannels).GetFields(BindingFlags.Public | BindingFlags.Static);
-
-      return fields
-             .Where(field => field.FieldType == typeof(string))
-             .Select(field => (string)field.GetValue(null)!)
-             .ToList();
+      return typeof(SmsChannels)
+             .GetFields(BindingFlags.Public | BindingFlags.Static)
+             .Where(f => f.FieldType == typeof(string))
+             .Select(f => (string)f.GetValue(null)!)
+             .ToArray();
    }
 }
