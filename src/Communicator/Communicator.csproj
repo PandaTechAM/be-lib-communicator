@@ -1,48 +1,62 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <Nullable>enable</Nullable>
-        <PackageIcon>pandatech.png</PackageIcon>
-        <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <Authors>Pandatech</Authors>
-        <Copyright>MIT</Copyright>
-        <Version>3.0.1</Version>
+        <ImplicitUsings>enable</ImplicitUsings>
+
+        <IsPackable>true</IsPackable>
+
         <PackageId>Pandatech.Communicator</PackageId>
-        <Title>SMS and Email Communication helper</Title>
-        <PackageTags>pandatech;communicator;messaging;email;smtp;mailkit;mimekit;sms;twilio;dexatel;notifications;transactional;dotnet;net9;minimal-api;dependency-injection</PackageTags>
-        <Description>
-            PandaTech.Communicator is a .NET 9 library for sending Email (SMTP via MailKit) and SMS through a simple, DI-friendly API.
-            It supports multiple channels per application and includes built-in SMS providers (Dexatel, Twilio) with configuration via
-            appsettings.json or programmatic setup for reliable messaging across different use cases.
-        </Description>
+        <Authors>Pandatech</Authors>
+        <Description>Send email (SMTP via MailKit) and SMS (Dexatel, Twilio) through a DI-friendly multi-channel API. Supports appsettings.json or programmatic configuration, fake mode for development, and multiple named channels per transport.</Description>
+        <PackageTags>email;smtp;mailkit;sms;twilio;dexatel;communicator;messaging;notifications;transactional</PackageTags>
+
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/PandaTechAM/be-lib-communicator</RepositoryUrl>
-        <PackageReleaseNotes>
-            nuget updates
-        </PackageReleaseNotes>
+        <PackageProjectUrl>https://github.com/PandaTechAM/be-lib-communicator</PackageProjectUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
-        <!-- Never run analyzers as part of compilation (local, CI, dotnet build/test/publish) -->
+        <PackageIcon>pandatech.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <Version>4.0.0</Version>
+        <PackageReleaseNotes>Multi-target net8.0/net9.0/net10.0, source-generated logging, removed unused OpenAPI reference</PackageReleaseNotes>
+
+        <!-- Build quality -->
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <!-- Source/symbols -->
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+
+        <!-- Analyzer behavior -->
         <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
-
-        <!-- Keep background/live analysis in the IDE -->
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
-
-        <!-- Optional: ensure code-style analyzers don't run during build either -->
         <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="..\..\pandatech.png" Pack="true" PackagePath="\"/>
-        <None Include="..\..\Readme.md" Pack="true" PackagePath="\"/>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="MailKit" Version="4.14.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
         <PackageReference Include="MimeKit" Version="4.14.0"/>
-        <PackageReference Include="Pandatech.Analyzers" Version="2.1.0" />
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.18.0.131500">
+    </ItemGroup>
+
+    <!-- Analyzers -->
+    <ItemGroup>
+        <PackageReference Include="Pandatech.Analyzers" Version="[2.1.0]" PrivateAssets="all"/>
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="[10.18.0.131500]">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
