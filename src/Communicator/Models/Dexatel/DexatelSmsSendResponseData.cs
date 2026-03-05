@@ -1,9 +1,9 @@
-namespace Communicator.Models.Dexatel;
+﻿namespace Communicator.Models.Dexatel;
 
 public class DexatelSmsSendResponseData
 {
    public required string Id { get; set; }
-   public required string AccountId { get; set; }
+   public string? AccountId { get; set; }
    public required string Text { get; set; }
    public required string From { get; set; }
    public required string To { get; set; }

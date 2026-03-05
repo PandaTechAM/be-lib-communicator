@@ -21,8 +21,8 @@
         <PackageIcon>pandatech.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
 
-        <Version>4.0.0</Version>
-        <PackageReleaseNotes>Multi-target net8.0/net9.0/net10.0, source-generated logging, removed unused OpenAPI reference</PackageReleaseNotes>
+        <Version>4.0.1</Version>
+        <PackageReleaseNotes>Multi-target net8.0/net9.0/net10.0, source-generated logging, removed unused OpenAPI reference, cleaned up models</PackageReleaseNotes>
 
         <!-- Build quality -->
         <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
