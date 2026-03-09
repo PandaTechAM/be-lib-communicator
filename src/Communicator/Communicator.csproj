@@ -21,8 +21,8 @@
         <PackageIcon>pandatech.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
 
-        <Version>4.0.1</Version>
-        <PackageReleaseNotes>Multi-target net8.0/net9.0/net10.0, source-generated logging, removed unused OpenAPI reference, cleaned up models</PackageReleaseNotes>
+        <Version>4.0.2</Version>
+        <PackageReleaseNotes>Support email integration with username and password</PackageReleaseNotes>
 
         <!-- Build quality -->
         <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
@@ -49,8 +49,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="MailKit" Version="4.14.1"/>
-        <PackageReference Include="MimeKit" Version="4.14.0"/>
+        <PackageReference Include="MailKit" Version="4.15.1" />
+        <PackageReference Include="MimeKit" Version="4.15.1" />
     </ItemGroup>
 
     <!-- Analyzers -->

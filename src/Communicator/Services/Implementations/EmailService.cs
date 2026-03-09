@@ -75,14 +75,27 @@ internal sealed class EmailService(CommunicatorOptions options) : IEmailService
       return client;
    }
 
-   private static async Task ConnectAndAuthAsync(SmtpClient client, EmailConfiguration config, CancellationToken ct)
+   private static async Task ConnectAndAuthAsync(SmtpClient client,
+      EmailConfiguration config,
+      CancellationToken ct)
    {
-      var socketOptions = ResolveSocketOptions(config.SmtpPort);
-      await client.ConnectAsync(config.SmtpServer, config.SmtpPort, socketOptions, ct);
+      await client.ConnectAsync(
+         config.SmtpServer,
+         config.SmtpPort,
+         ResolveSocketOptions(config.SmtpPort),
+         ct);
 
-      if (!string.IsNullOrWhiteSpace(config.SmtpUsername))
+      var hasUser = !string.IsNullOrWhiteSpace(config.SmtpUsername);
+      var hasPass = !string.IsNullOrWhiteSpace(config.SmtpPassword);
+
+      if (hasUser != hasPass)
       {
-         await client.AuthenticateAsync(config.SmtpUsername, config.SmtpPassword, ct);
+         throw new InvalidOperationException("SMTP username and password must both be set or both be empty.");
+      }
+
+      if (hasUser)
+      {
+         await client.AuthenticateAsync(config.SmtpUsername!, config.SmtpPassword!, ct);
       }
    }
 
@@ -98,36 +111,25 @@ internal sealed class EmailService(CommunicatorOptions options) : IEmailService
 
    private static MimeMessage CreateMimeMessage(EmailConfiguration config, EmailMessage emailMessage)
    {
-      var senderEmail = !string.IsNullOrWhiteSpace(config.SenderEmail) ? config.SenderEmail : config.SmtpUsername;
+      if (string.IsNullOrWhiteSpace(config.SenderEmail))
+      {
+         throw new InvalidOperationException("SenderEmail is required.");
+      }
 
       var message = new MimeMessage();
 
-      if (!string.IsNullOrWhiteSpace(config.SenderName) && !string.IsNullOrWhiteSpace(senderEmail))
-      {
-         message.From.Add(new MailboxAddress(config.SenderName, senderEmail));
-      }
-      else if (!string.IsNullOrWhiteSpace(senderEmail))
-      {
-         message.From.Add(MailboxAddress.Parse(senderEmail));
-      }
-      else
-      {
-         throw new InvalidOperationException("SenderEmail (or SmtpUsername fallback) is required.");
-      }
+      message.From.Add(!string.IsNullOrWhiteSpace(config.SenderName)
+         ? new MailboxAddress(config.SenderName, config.SenderEmail)
+         : MailboxAddress.Parse(config.SenderEmail));
 
       message.To.AddRange(ParseDistinct(emailMessage.Recipients));
       message.Subject = emailMessage.Subject;
 
-      var builder = new BodyBuilder();
-
-      if (emailMessage.IsBodyHtml)
+      var builder = new BodyBuilder
       {
-         builder.HtmlBody = emailMessage.Body;
-      }
-      else
-      {
-         builder.TextBody = emailMessage.Body;
-      }
+         HtmlBody = emailMessage.IsBodyHtml ? emailMessage.Body : null,
+         TextBody = emailMessage.IsBodyHtml ? null : emailMessage.Body
+      };
 
       if (emailMessage.Attachments is { Count: > 0 })
       {
