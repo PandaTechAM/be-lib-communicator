@@ -9,108 +9,113 @@ using Microsoft.Extensions.Hosting;
 
 namespace Communicator.Extensions;
 
+/// <summary>Registration extensions for wiring the communicator into a <see cref="WebApplicationBuilder" />.</summary>
 public static class WebApplicationBuilderExtensions
 {
-   public static WebApplicationBuilder AddCommunicator(this WebApplicationBuilder builder,
-      Action<CommunicatorOptions>? setupAction = null)
-   {
-      var setupActionOptions = GetCommunicatorSetupOptions(setupAction);
+    /// <summary>
+    ///     Register the email and SMS services. Uses <paramref name="setupAction" /> when supplied,
+    ///     otherwise reads options from the builder configuration; throws if neither is provided.
+    /// </summary>
+    public static WebApplicationBuilder AddCommunicator(this WebApplicationBuilder builder,
+        Action<CommunicatorOptions>? setupAction = null)
+    {
+        var setupActionOptions = GetCommunicatorSetupOptions(setupAction);
 
-      var configurationOptions = GetCommunicatorConfigurationOptions(builder);
+        var configurationOptions = GetCommunicatorConfigurationOptions(builder);
 
-      CommunicatorOptions options;
+        CommunicatorOptions options;
 
-      if (setupAction is not null)
-      {
-         options = setupActionOptions!;
-      }
-      else if (configurationOptions is not null)
-      {
-         options = configurationOptions;
-      }
-      else
-      {
-         throw new ArgumentException("No any Configuration Option setup.");
-      }
+        if (setupAction is not null)
+        {
+            options = setupActionOptions!;
+        }
+        else if (configurationOptions is not null)
+        {
+            options = configurationOptions;
+        }
+        else
+        {
+            throw new ArgumentException("No any Configuration Option setup.");
+        }
 
-      RegisterSmsHttpClientsFromConfig(builder, options);
+        RegisterSmsHttpClientsFromConfig(builder, options);
 
-      RegisterServices(builder, options);
+        RegisterServices(builder, options);
 
-      return builder;
-   }
+        return builder;
+    }
 
-   private static CommunicatorOptions? GetCommunicatorConfigurationOptions(IHostApplicationBuilder builder)
-   {
-      var configuration = builder.Configuration;
+    private static CommunicatorOptions? GetCommunicatorConfigurationOptions(IHostApplicationBuilder builder)
+    {
+        var configuration = builder.Configuration;
 
-      var configurationOptions = CommunicatorConfigurator.ReadConfigurationOptions(configuration);
+        var configurationOptions = CommunicatorConfigurator.ReadConfigurationOptions(configuration);
 
-      if (configurationOptions is null)
-      {
-         return null;
-      }
+        if (configurationOptions is null)
+        {
+            return null;
+        }
 
-      configurationOptions.Validate();
+        configurationOptions.Validate();
 
-      return configurationOptions;
-   }
+        return configurationOptions;
+    }
 
-   private static CommunicatorOptions? GetCommunicatorSetupOptions(Action<CommunicatorOptions>? setupAction = null)
-   {
-      var setupOptions = new CommunicatorOptions();
+    private static CommunicatorOptions? GetCommunicatorSetupOptions(Action<CommunicatorOptions>? setupAction = null)
+    {
+        var setupOptions = new CommunicatorOptions();
 
-      if (setupAction is null)
-      {
-         return null;
-      }
+        if (setupAction is null)
+        {
+            return null;
+        }
 
-      setupAction.Invoke(setupOptions);
-      setupOptions.Validate();
+        setupAction.Invoke(setupOptions);
+        setupOptions.Validate();
 
-      return setupOptions;
-   }
+        return setupOptions;
+    }
 
-   private static void RegisterSmsHttpClientsFromConfig(IHostApplicationBuilder builder,
-      CommunicatorOptions communicatorOptions)
-   {
-      if (communicatorOptions.SmsFake)
-      {
-         return;
-      }
+    private static void RegisterSmsHttpClientsFromConfig(IHostApplicationBuilder builder,
+        CommunicatorOptions communicatorOptions)
+    {
+        if (communicatorOptions.SmsFake)
+        {
+            return;
+        }
 
-      foreach (var (key, configValue) in communicatorOptions.SmsConfigurations!)
-      {
-         builder.Services.AddHttpClient(key,
-            client =>
-            {
-               client.BaseAddress = new Uri(SmsProviderIntegrations.BaseUrls[configValue.Provider]);
-               client.Timeout = TimeSpan.FromMilliseconds(configValue.TimeoutMs);
-            });
-      }
-   }
+        foreach (var (key, configValue) in communicatorOptions.SmsConfigurations!)
+        {
+            builder.Services.AddHttpClient(key,
+                client =>
+                {
+                    client.BaseAddress = new Uri(SmsProviderIntegrations.BaseUrls[configValue.Provider]);
+                    client.Timeout = TimeSpan.FromMilliseconds(configValue.TimeoutMs);
+                });
+        }
+    }
 
-   private static void RegisterServices(IHostApplicationBuilder builder,
-      CommunicatorOptions communicatorOptions)
-   {
-      if (communicatorOptions.EmailFake)
-      {
-         builder.Services.AddScoped<IEmailService, FakeEmailService>();
-      }
-      else
-      {
-         builder.Services.AddScoped<IEmailService, EmailService>();
-      }
+    private static void RegisterServices(IHostApplicationBuilder builder,
+        CommunicatorOptions communicatorOptions)
+    {
+        if (communicatorOptions.EmailFake)
+        {
+            builder.Services.AddScoped<IEmailService, FakeEmailService>();
+        }
+        else
+        {
+            builder.Services.AddScoped<IEmailService, EmailService>();
+        }
 
-      if (communicatorOptions.SmsFake)
-      {
-         builder.Services.AddScoped<ISmsService, FakeSmsService>();
-      }
-      else
-      {
-         builder.Services.AddScoped<ISmsService, SmsService>();
-      }
+        if (communicatorOptions.SmsFake)
+        {
+            builder.Services.AddScoped<ISmsService, FakeSmsService>();
+        }
+        else
+        {
+            builder.Services.AddScoped<ISmsService, SmsService>();
+        }
 
-      builder.Services.AddSingleton(communicatorOptions);
-   }
+        builder.Services.AddSingleton(communicatorOptions);
+    }
 }

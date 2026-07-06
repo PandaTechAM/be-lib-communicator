@@ -10,163 +10,163 @@ namespace Communicator.Services.Implementations;
 
 internal sealed class EmailService(CommunicatorOptions options) : IEmailService
 {
-   public async Task<string> SendAsync(EmailMessage emailMessage, CancellationToken ct = default)
-   {
-      EmailMessageValidator.Validate(emailMessage);
+    public async Task<string> SendAsync(EmailMessage emailMessage, CancellationToken ct = default)
+    {
+        EmailMessageValidator.Validate(emailMessage);
 
-      var config = GetEmailConfigurationByChannel(emailMessage.Channel);
-      var mime = CreateMimeMessage(config, emailMessage);
+        var config = GetEmailConfigurationByChannel(emailMessage.Channel);
+        var mime = CreateMimeMessage(config, emailMessage);
 
-      using var client = CreateClient(config);
+        using var client = CreateClient(config);
 
-      await ConnectAndAuthAsync(client, config, ct);
-      var response = await client.SendAsync(mime, ct);
-      await client.DisconnectAsync(true, ct);
-      return response;
-   }
+        await ConnectAndAuthAsync(client, config, ct);
+        var response = await client.SendAsync(mime, ct);
+        await client.DisconnectAsync(true, ct);
+        return response;
+    }
 
-   public async Task<List<string>> SendBulkAsync(List<EmailMessage> emailMessages,
-      CancellationToken ct = default)
-   {
-      if (emailMessages.Count == 0)
-      {
-         return [];
-      }
+    public async Task<List<string>> SendBulkAsync(List<EmailMessage> emailMessages,
+        CancellationToken ct = default)
+    {
+        if (emailMessages.Count == 0)
+        {
+            return [];
+        }
 
-      foreach (var t in emailMessages)
-      {
-         EmailMessageValidator.Validate(t);
-      }
+        foreach (var t in emailMessages)
+        {
+            EmailMessageValidator.Validate(t);
+        }
 
-      var responses = new string[emailMessages.Count];
+        var responses = new string[emailMessages.Count];
 
-      var groups = emailMessages
-                   .Select((msg, idx) => (msg, idx))
-                   .GroupBy(x => x.msg.Channel);
+        var groups = emailMessages
+            .Select((msg, idx) => (msg, idx))
+            .GroupBy(x => x.msg.Channel);
 
-      foreach (var group in groups)
-      {
-         var config = GetEmailConfigurationByChannel(group.Key);
+        foreach (var group in groups)
+        {
+            var config = GetEmailConfigurationByChannel(group.Key);
 
-         using var client = CreateClient(config);
+            using var client = CreateClient(config);
 
-         await ConnectAndAuthAsync(client, config, ct);
+            await ConnectAndAuthAsync(client, config, ct);
 
-         foreach (var (msg, idx) in group)
-         {
-            var mime = CreateMimeMessage(config, msg);
-            responses[idx] = await client.SendAsync(mime, ct);
-         }
+            foreach (var (msg, idx) in group)
+            {
+                var mime = CreateMimeMessage(config, msg);
+                responses[idx] = await client.SendAsync(mime, ct);
+            }
 
-         await client.DisconnectAsync(true, ct);
-      }
+            await client.DisconnectAsync(true, ct);
+        }
 
-      return responses.ToList();
-   }
+        return responses.ToList();
+    }
 
-   private static SmtpClient CreateClient(EmailConfiguration config)
-   {
-      var client = new SmtpClient
-      {
-         Timeout = config.TimeoutMs,
-         CheckCertificateRevocation = true
-      };
+    private static SmtpClient CreateClient(EmailConfiguration config)
+    {
+        var client = new SmtpClient
+        {
+            Timeout = config.TimeoutMs,
+            CheckCertificateRevocation = true
+        };
 
-      return client;
-   }
+        return client;
+    }
 
-   private static async Task ConnectAndAuthAsync(SmtpClient client,
-      EmailConfiguration config,
-      CancellationToken ct)
-   {
-      await client.ConnectAsync(
-         config.SmtpServer,
-         config.SmtpPort,
-         ResolveSocketOptions(config.SmtpPort),
-         ct);
+    private static async Task ConnectAndAuthAsync(SmtpClient client,
+        EmailConfiguration config,
+        CancellationToken ct)
+    {
+        await client.ConnectAsync(
+            config.SmtpServer,
+            config.SmtpPort,
+            ResolveSocketOptions(config.SmtpPort),
+            ct);
 
-      var hasUser = !string.IsNullOrWhiteSpace(config.SmtpUsername);
-      var hasPass = !string.IsNullOrWhiteSpace(config.SmtpPassword);
+        var hasUser = !string.IsNullOrWhiteSpace(config.SmtpUsername);
+        var hasPass = !string.IsNullOrWhiteSpace(config.SmtpPassword);
 
-      if (hasUser != hasPass)
-      {
-         throw new InvalidOperationException("SMTP username and password must both be set or both be empty.");
-      }
+        if (hasUser != hasPass)
+        {
+            throw new InvalidOperationException("SMTP username and password must both be set or both be empty.");
+        }
 
-      if (hasUser)
-      {
-         await client.AuthenticateAsync(config.SmtpUsername!, config.SmtpPassword!, ct);
-      }
-   }
+        if (hasUser)
+        {
+            await client.AuthenticateAsync(config.SmtpUsername!, config.SmtpPassword!, ct);
+        }
+    }
 
-   private static SecureSocketOptions ResolveSocketOptions(int port)
-   {
-      return port switch
-      {
-         465 => SecureSocketOptions.SslOnConnect,
-         587 => SecureSocketOptions.StartTls,
-         _ => SecureSocketOptions.StartTlsWhenAvailable
-      };
-   }
+    private static SecureSocketOptions ResolveSocketOptions(int port)
+    {
+        return port switch
+        {
+            465 => SecureSocketOptions.SslOnConnect,
+            587 => SecureSocketOptions.StartTls,
+            _ => SecureSocketOptions.StartTlsWhenAvailable
+        };
+    }
 
-   private static MimeMessage CreateMimeMessage(EmailConfiguration config, EmailMessage emailMessage)
-   {
-      if (string.IsNullOrWhiteSpace(config.SenderEmail))
-      {
-         throw new InvalidOperationException("SenderEmail is required.");
-      }
+    private static MimeMessage CreateMimeMessage(EmailConfiguration config, EmailMessage emailMessage)
+    {
+        if (string.IsNullOrWhiteSpace(config.SenderEmail))
+        {
+            throw new InvalidOperationException("SenderEmail is required.");
+        }
 
-      var message = new MimeMessage();
+        var message = new MimeMessage();
 
-      message.From.Add(!string.IsNullOrWhiteSpace(config.SenderName)
-         ? new MailboxAddress(config.SenderName, config.SenderEmail)
-         : MailboxAddress.Parse(config.SenderEmail));
+        message.From.Add(!string.IsNullOrWhiteSpace(config.SenderName)
+            ? new MailboxAddress(config.SenderName, config.SenderEmail)
+            : MailboxAddress.Parse(config.SenderEmail));
 
-      message.To.AddRange(ParseDistinct(emailMessage.Recipients));
-      message.Subject = emailMessage.Subject;
+        message.To.AddRange(ParseDistinct(emailMessage.Recipients));
+        message.Subject = emailMessage.Subject;
 
-      var builder = new BodyBuilder
-      {
-         HtmlBody = emailMessage.IsBodyHtml ? emailMessage.Body : null,
-         TextBody = emailMessage.IsBodyHtml ? null : emailMessage.Body
-      };
+        var builder = new BodyBuilder
+        {
+            HtmlBody = emailMessage.IsBodyHtml ? emailMessage.Body : null,
+            TextBody = emailMessage.IsBodyHtml ? null : emailMessage.Body
+        };
 
-      if (emailMessage.Attachments is { Count: > 0 })
-      {
-         foreach (var a in emailMessage.Attachments)
-         {
-            builder.Attachments.Add(a.FileName, a.Content);
-         }
-      }
+        if (emailMessage.Attachments is { Count: > 0 })
+        {
+            foreach (var a in emailMessage.Attachments)
+            {
+                builder.Attachments.Add(a.FileName, a.Content);
+            }
+        }
 
-      if (emailMessage.Cc is { Count: > 0 })
-      {
-         message.Cc.AddRange(ParseDistinct(emailMessage.Cc));
-      }
+        if (emailMessage.Cc is { Count: > 0 })
+        {
+            message.Cc.AddRange(ParseDistinct(emailMessage.Cc));
+        }
 
-      if (emailMessage.Bcc is { Count: > 0 })
-      {
-         message.Bcc.AddRange(ParseDistinct(emailMessage.Bcc));
-      }
+        if (emailMessage.Bcc is { Count: > 0 })
+        {
+            message.Bcc.AddRange(ParseDistinct(emailMessage.Bcc));
+        }
 
-      message.Body = builder.ToMessageBody();
-      return message;
-   }
+        message.Body = builder.ToMessageBody();
+        return message;
+    }
 
-   private static IEnumerable<InternetAddress> ParseDistinct(IEnumerable<string> emails)
-   {
-      return emails
-             .Where(e => !string.IsNullOrWhiteSpace(e))
-             .Distinct(StringComparer.OrdinalIgnoreCase)
-             .Select(MailboxAddress.Parse);
-   }
+    private static IEnumerable<InternetAddress> ParseDistinct(IEnumerable<string> emails)
+    {
+        return emails
+            .Where(e => !string.IsNullOrWhiteSpace(e))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(MailboxAddress.Parse);
+    }
 
-   private EmailConfiguration GetEmailConfigurationByChannel(string channel)
-   {
-      var config = options.EmailConfigurations?.FirstOrDefault(x => x.Key == channel)
-                          .Value;
+    private EmailConfiguration GetEmailConfigurationByChannel(string channel)
+    {
+        var config = options.EmailConfigurations?.FirstOrDefault(x => x.Key == channel)
+            .Value;
 
-      return config ??
-             throw new ArgumentException("No valid email configuration for the given channel.", nameof(channel));
-   }
+        return config ??
+               throw new ArgumentException("No valid email configuration for the given channel.", nameof(channel));
+    }
 }

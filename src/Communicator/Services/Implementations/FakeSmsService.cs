@@ -8,35 +8,36 @@ namespace Communicator.Services.Implementations;
 
 internal class FakeSmsService(ILogger<FakeSmsService> logger) : ISmsService
 {
-   public Task<List<GeneralSmsResponse>> SendAsync(SmsMessage smsMessage, CancellationToken ct = default)
-   {
-      smsMessage = SmsMessageValidator.ValidateAndTransform(smsMessage);
+    public Task<List<GeneralSmsResponse>> SendAsync(SmsMessage smsMessage, CancellationToken ct = default)
+    {
+        smsMessage = SmsMessageValidator.ValidateAndTransform(smsMessage);
 
-      foreach (var recipient in smsMessage.Recipients)
-      {
-         recipient.Transform();
-
-         logger.LogCritical("Sms sent to {Recipient}\n Sms message is {Message}", recipient, smsMessage.Message);
-      }
-
-      return Task.FromResult(new List<GeneralSmsResponse>());
-   }
-
-   public Task<List<GeneralSmsResponse>> SendBulkAsync(List<SmsMessage> smsMessageList,
-      CancellationToken ct = default)
-   {
-      foreach (var smsMessage in smsMessageList)
-      {
-         SmsMessageValidator.ValidateAndTransform(smsMessage);
-
-         foreach (var recipient in smsMessage.Recipients)
-         {
+        foreach (var recipient in smsMessage.Recipients)
+        {
             recipient.Transform();
 
-            logger.LogCritical("Sms sent to {Recipient} \n Sms message is {Message}", recipient, smsMessage.Message);
-         }
-      }
+            logger.LogCritical("Sms sent to {Recipient}\n Sms message is {Message}", recipient, smsMessage.Message);
+        }
 
-      return Task.FromResult(new List<GeneralSmsResponse>());
-   }
+        return Task.FromResult(new List<GeneralSmsResponse>());
+    }
+
+    public Task<List<GeneralSmsResponse>> SendBulkAsync(List<SmsMessage> smsMessageList,
+        CancellationToken ct = default)
+    {
+        foreach (var smsMessage in smsMessageList)
+        {
+            SmsMessageValidator.ValidateAndTransform(smsMessage);
+
+            foreach (var recipient in smsMessage.Recipients)
+            {
+                recipient.Transform();
+
+                logger.LogCritical("Sms sent to {Recipient} \n Sms message is {Message}", recipient,
+                    smsMessage.Message);
+            }
+        }
+
+        return Task.FromResult(new List<GeneralSmsResponse>());
+    }
 }

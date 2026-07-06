@@ -1,6 +1,8 @@
 namespace Communicator.Models.Dexatel;
 
+/// <summary>Request envelope for the Dexatel SMS send API.</summary>
 public class DexatelSmsSendRequest
 {
-   public required DexatelSmsSendRequestData Data { get; set; }
+    /// <summary>Message payload.</summary>
+    public required DexatelSmsSendRequestData Data { get; set; }
 }
