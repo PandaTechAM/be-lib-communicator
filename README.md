@@ -214,10 +214,10 @@ like `(374)91123456` are handled automatically.
 
 ### Provider-specific Properties
 
-| Provider  | Required Properties              |
-|-----------|----------------------------------|
-| Dexatel   | `X-Dexatel-Key`                  |
-| Twilio    | `SID`, `AUTH_TOKEN`              |
+| Provider | Required Properties |
+|----------|---------------------|
+| Dexatel  | `X-Dexatel-Key`     |
+| Twilio   | `SID`, `AUTH_TOKEN` |
 
 ---
 
