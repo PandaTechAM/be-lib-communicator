@@ -7,34 +7,34 @@ namespace Communicator.Services.Implementations;
 
 internal class FakeEmailService(ILogger<FakeEmailService> logger) : IEmailService
 {
-   public Task<string> SendAsync(EmailMessage emailMessage, CancellationToken ct = default)
-   {
-      EmailMessageValidator.Validate(emailMessage);
+    public Task<string> SendAsync(EmailMessage emailMessage, CancellationToken ct = default)
+    {
+        EmailMessageValidator.Validate(emailMessage);
 
-      logger.LogCritical("Email sent to {Recipient}\n Email subject is {Subject} \n Email body is {Body}",
-         emailMessage.Recipients,
-         emailMessage.Subject,
-         emailMessage.Body);
-
-      return Task.FromResult("2.0.0 OK");
-   }
-
-   public Task<List<string>> SendBulkAsync(List<EmailMessage> emailMessages,
-      CancellationToken ct = default)
-   {
-      foreach (var emailMessage in emailMessages)
-      {
-         EmailMessageValidator.Validate(emailMessage);
-
-         logger.LogCritical("Email sent to {Recipient} \n Email subject is {Subject} \n Email body is {Body}",
+        logger.LogCritical("Email sent to {Recipient}\n Email subject is {Subject} \n Email body is {Body}",
             emailMessage.Recipients,
             emailMessage.Subject,
             emailMessage.Body);
-      }
 
-      return Task.FromResult(new List<string>
-      {
-         "2.0.0 OK"
-      });
-   }
+        return Task.FromResult("2.0.0 OK");
+    }
+
+    public Task<List<string>> SendBulkAsync(List<EmailMessage> emailMessages,
+        CancellationToken ct = default)
+    {
+        foreach (var emailMessage in emailMessages)
+        {
+            EmailMessageValidator.Validate(emailMessage);
+
+            logger.LogCritical("Email sent to {Recipient} \n Email subject is {Subject} \n Email body is {Body}",
+                emailMessage.Recipients,
+                emailMessage.Subject,
+                emailMessage.Body);
+        }
+
+        return Task.FromResult(new List<string>
+        {
+            "2.0.0 OK"
+        });
+    }
 }

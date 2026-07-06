@@ -1,65 +1,65 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
 
-        <IsPackable>true</IsPackable>
+    <IsPackable>true</IsPackable>
 
-        <PackageId>Pandatech.Communicator</PackageId>
-        <Authors>Pandatech</Authors>
-        <Description>Send email (SMTP via MailKit) and SMS (Dexatel, Twilio) through a DI-friendly multi-channel API. Supports appsettings.json or programmatic configuration, fake mode for development, and multiple named channels per transport.</Description>
-        <PackageTags>email;smtp;mailkit;sms;twilio;dexatel;communicator;messaging;notifications;transactional</PackageTags>
+    <PackageId>Pandatech.Communicator</PackageId>
+    <Authors>Pandatech</Authors>
+    <Description>Send email (SMTP via MailKit) and SMS (Dexatel, Twilio) through a DI-friendly multi-channel API. Supports appsettings.json or programmatic configuration, fake mode for development, and multiple named channels per transport.</Description>
+    <PackageTags>email;smtp;mailkit;sms;twilio;dexatel;communicator;messaging;notifications;transactional</PackageTags>
 
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <RepositoryType>git</RepositoryType>
-        <RepositoryUrl>https://github.com/PandaTechAM/be-lib-communicator</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/PandaTechAM/be-lib-communicator</PackageProjectUrl>
-        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/PandaTechAM/be-lib-communicator</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/PandaTechAM/be-lib-communicator</PackageProjectUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
-        <PackageIcon>pandatech.png</PackageIcon>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>pandatech.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
 
-        <Version>4.0.2</Version>
-        <PackageReleaseNotes>Support email integration with username and password</PackageReleaseNotes>
+    <Version>4.0.3</Version>
+    <PackageReleaseNotes>Tooling modernization: xUnit v3 test migration, dependency updates, standardized editorconfig/gitignore/global.json.</PackageReleaseNotes>
 
-        <!-- Build quality -->
-        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Build quality -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-        <!-- Source/symbols -->
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <!-- Source/symbols -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
 
-        <!-- Analyzer behavior -->
-        <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
-        <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
-        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
-    </PropertyGroup>
+    <!-- Analyzer behavior -->
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <None Include="..\..\pandatech.png" Pack="true" PackagePath="\" />
-        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-    </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\pandatech.png" Pack="true" PackagePath="\"/>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="MailKit" Version="4.15.1" />
-        <PackageReference Include="MimeKit" Version="4.15.1" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.17.0"/>
+    <PackageReference Include="MimeKit" Version="4.17.0"/>
+  </ItemGroup>
 
-    <!-- Analyzers -->
-    <ItemGroup>
-        <PackageReference Include="Pandatech.Analyzers" Version="[2.1.0]" PrivateAssets="all" />
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="[10.18.0.131500]">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-    </ItemGroup>
+  <!-- Analyzers -->
+  <ItemGroup>
+    <PackageReference Include="Pandatech.Analyzers" Version="[2.1.0]" PrivateAssets="all"/>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="[10.28.0.143324]">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
 </Project>

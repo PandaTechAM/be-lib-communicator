@@ -8,107 +8,112 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Communicator.Extensions;
 
+/// <summary>Registration extensions for wiring the communicator into an <see cref="IServiceCollection" />.</summary>
 public static class ServiceCollectionExtensions
 {
-   public static IServiceCollection AddCommunicator(this IServiceCollection services,
-      IConfiguration configuration,
-      Action<CommunicatorOptions>? setupAction = null)
-   {
-      var setupActionOptions = GetCommunicatorSetupOptions(setupAction);
+    /// <summary>
+    ///     Register the email and SMS services. Uses <paramref name="setupAction" /> when supplied,
+    ///     otherwise reads options from <paramref name="configuration" />; throws if neither is provided.
+    /// </summary>
+    public static IServiceCollection AddCommunicator(this IServiceCollection services,
+        IConfiguration configuration,
+        Action<CommunicatorOptions>? setupAction = null)
+    {
+        var setupActionOptions = GetCommunicatorSetupOptions(setupAction);
 
-      var configurationOptions = GetCommunicatorConfigurationOptions(configuration);
+        var configurationOptions = GetCommunicatorConfigurationOptions(configuration);
 
-      CommunicatorOptions options;
+        CommunicatorOptions options;
 
-      if (setupAction is not null)
-      {
-         options = setupActionOptions!;
-      }
-      else if (configurationOptions is not null)
-      {
-         options = configurationOptions;
-      }
-      else
-      {
-         throw new ArgumentException("No any Configuration Option setup.");
-      }
+        if (setupAction is not null)
+        {
+            options = setupActionOptions!;
+        }
+        else if (configurationOptions is not null)
+        {
+            options = configurationOptions;
+        }
+        else
+        {
+            throw new ArgumentException("No any Configuration Option setup.");
+        }
 
-      RegisterSmsHttpClientsFromConfig(services, options);
+        RegisterSmsHttpClientsFromConfig(services, options);
 
-      RegisterServices(services, options);
+        RegisterServices(services, options);
 
-      return services;
-   }
+        return services;
+    }
 
-   private static CommunicatorOptions? GetCommunicatorConfigurationOptions(IConfiguration configuration)
-   {
-      var configurationOptions = CommunicatorConfigurator.ReadConfigurationOptions(configuration);
+    private static CommunicatorOptions? GetCommunicatorConfigurationOptions(IConfiguration configuration)
+    {
+        var configurationOptions = CommunicatorConfigurator.ReadConfigurationOptions(configuration);
 
-      if (configurationOptions is null)
-      {
-         return null;
-      }
+        if (configurationOptions is null)
+        {
+            return null;
+        }
 
-      configurationOptions.Validate();
+        configurationOptions.Validate();
 
-      return configurationOptions;
-   }
+        return configurationOptions;
+    }
 
-   private static CommunicatorOptions? GetCommunicatorSetupOptions(Action<CommunicatorOptions>? setupAction = null)
-   {
-      var setupOptions = new CommunicatorOptions();
+    private static CommunicatorOptions? GetCommunicatorSetupOptions(Action<CommunicatorOptions>? setupAction = null)
+    {
+        var setupOptions = new CommunicatorOptions();
 
-      if (setupAction is null)
-      {
-         return null;
-      }
+        if (setupAction is null)
+        {
+            return null;
+        }
 
-      setupAction.Invoke(setupOptions);
-      setupOptions.Validate();
+        setupAction.Invoke(setupOptions);
+        setupOptions.Validate();
 
-      return setupOptions;
-   }
+        return setupOptions;
+    }
 
-   private static void RegisterSmsHttpClientsFromConfig(IServiceCollection services,
-      CommunicatorOptions communicatorOptions)
-   {
-      if (communicatorOptions.SmsFake)
-      {
-         return;
-      }
+    private static void RegisterSmsHttpClientsFromConfig(IServiceCollection services,
+        CommunicatorOptions communicatorOptions)
+    {
+        if (communicatorOptions.SmsFake)
+        {
+            return;
+        }
 
-      foreach (var (key, configValue) in communicatorOptions.SmsConfigurations!)
-      {
-         services.AddHttpClient(key,
-            client =>
-            {
-               client.BaseAddress = new Uri(SmsProviderIntegrations.BaseUrls[configValue.Provider]);
-               client.Timeout = TimeSpan.FromMilliseconds(configValue.TimeoutMs);
-            });
-      }
-   }
+        foreach (var (key, configValue) in communicatorOptions.SmsConfigurations!)
+        {
+            services.AddHttpClient(key,
+                client =>
+                {
+                    client.BaseAddress = new Uri(SmsProviderIntegrations.BaseUrls[configValue.Provider]);
+                    client.Timeout = TimeSpan.FromMilliseconds(configValue.TimeoutMs);
+                });
+        }
+    }
 
-   private static void RegisterServices(IServiceCollection services,
-      CommunicatorOptions communicatorOptions)
-   {
-      if (communicatorOptions.EmailFake)
-      {
-         services.AddScoped<IEmailService, FakeEmailService>();
-      }
-      else
-      {
-         services.AddScoped<IEmailService, EmailService>();
-      }
+    private static void RegisterServices(IServiceCollection services,
+        CommunicatorOptions communicatorOptions)
+    {
+        if (communicatorOptions.EmailFake)
+        {
+            services.AddScoped<IEmailService, FakeEmailService>();
+        }
+        else
+        {
+            services.AddScoped<IEmailService, EmailService>();
+        }
 
-      if (communicatorOptions.SmsFake)
-      {
-         services.AddScoped<ISmsService, FakeSmsService>();
-      }
-      else
-      {
-         services.AddScoped<ISmsService, SmsService>();
-      }
+        if (communicatorOptions.SmsFake)
+        {
+            services.AddScoped<ISmsService, FakeSmsService>();
+        }
+        else
+        {
+            services.AddScoped<ISmsService, SmsService>();
+        }
 
-      services.AddSingleton(communicatorOptions);
-   }
+        services.AddSingleton(communicatorOptions);
+    }
 }
